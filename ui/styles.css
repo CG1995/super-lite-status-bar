@@ -1,0 +1,314 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f7f8fa;
+  --panel: rgba(255, 255, 255, 0.94);
+  --text: #1d232b;
+  --muted: #66717f;
+  --line: rgba(18, 26, 38, 0.12);
+  --accent: #447a5e;
+  --warn: #b46d17;
+  --danger: #b94f4b;
+  --status-font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15181d;
+    --panel: rgba(28, 32, 38, 0.94);
+    --text: #f0f3f6;
+    --muted: #a2aab5;
+    --line: rgba(232, 237, 244, 0.15);
+    --accent: #6fb08c;
+    --warn: #d9983f;
+    --danger: #dc716c;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f8fa;
+  --panel: rgba(255, 255, 255, 0.96);
+  --text: #1d232b;
+  --muted: #66717f;
+  --line: rgba(18, 26, 38, 0.12);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15181d;
+  --panel: rgba(28, 32, 38, 0.96);
+  --text: #f0f3f6;
+  --muted: #a2aab5;
+  --line: rgba(232, 237, 244, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: transparent;
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--status-font-size);
+  letter-spacing: 0;
+  overflow: hidden;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 0 12px;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.autosave-state {
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.fatal {
+  margin: 16px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.status-mark {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(111, 176, 140, 0.14);
+}
+
+.pressure-medium {
+  border-color: var(--warn);
+}
+
+.pressure-high {
+  border-color: var(--danger);
+}
+
+.settings-shell {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.settings {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 24px 24px;
+}
+
+.settings-header,
+.settings-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.settings-header h1 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.settings-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.settings-section {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+
+.settings-section h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.field {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) 1fr;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  margin: 6px 0;
+}
+
+.field.inline input {
+  justify-self: start;
+}
+
+.field span {
+  color: var(--text);
+}
+
+select,
+input[type="number"] {
+  width: min(260px, 100%);
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 0 10px;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+input[type="range"] {
+  width: min(300px, 100%);
+}
+
+.settings-footer {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-footer [data-status] {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.floating-shell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.floating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(16px);
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.floating span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.floating b {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.tooltip-shell {
+  width: 100%;
+  height: 100%;
+  padding: 6px;
+}
+
+.tray-tooltip {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.tooltip-line {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.tooltip-line span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.tooltip-line strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+@media (max-width: 560px) {
+  .settings {
+    padding: 18px;
+  }
+
+  .settings-header,
+  .settings-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .field {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
