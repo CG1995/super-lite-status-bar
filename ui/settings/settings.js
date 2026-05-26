@@ -53,6 +53,15 @@ export async function renderSettings(root, api, config) {
     status.textContent = `读取自启动失败：${String(error)}`;
   });
 
+  if (window.__settingsConfigListener) {
+    window.removeEventListener("app-config", window.__settingsConfigListener);
+  }
+  window.__settingsConfigListener = (event) => {
+    config = normalizeFixedConfig(event.detail);
+    applyConfigToForm(form, config);
+  };
+  window.addEventListener("app-config", window.__settingsConfigListener);
+
   const scheduleSave = (delay = 120) => {
     clearTimeout(saveTimer);
     status.textContent = "保存中...";
@@ -142,6 +151,19 @@ function readConfig(form, config) {
   return next;
 }
 
+function applyConfigToForm(form, config) {
+  for (const element of form.elements) {
+    if (!element.name) continue;
+    const value = getByPath(config, element.name);
+    if (value === undefined) continue;
+    if (element.type === "checkbox") {
+      element.checked = Boolean(value);
+    } else {
+      element.value = String(value);
+    }
+  }
+}
+
 function normalizeFixedConfig(config) {
   config.launch_hidden = true;
   config.display_mode = "compact";
@@ -171,4 +193,8 @@ function setByPath(target, path, value) {
     cursor = cursor[part];
   }
   cursor[parts[0]] = value;
+}
+
+function getByPath(target, path) {
+  return path.split(".").reduce((cursor, part) => cursor?.[part], target);
 }

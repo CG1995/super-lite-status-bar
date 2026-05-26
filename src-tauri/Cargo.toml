@@ -1,6 +1,6 @@
 [package]
 name = "super-lite-status-bar"
-version = "0.1.0"
+version = "0.1.1"
 description = "A lightweight system status tray and menu bar monitor."
 authors = ["Codex"]
 edition = "2021"

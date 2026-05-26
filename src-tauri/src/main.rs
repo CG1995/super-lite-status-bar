@@ -152,6 +152,7 @@ fn persist_config(
         .map_err(|err| err.to_string())?;
     *state.config.write().map_err(|err| err.to_string())? = config.clone();
     ui::floating_bar::apply_config(app, &config).map_err(|err| err.to_string())?;
+    ui::tray::sync_menu_state(app, &config).map_err(|err| err.to_string())?;
     app.emit("config-updated", &config)
         .map_err(|err| err.to_string())?;
     Ok(config)

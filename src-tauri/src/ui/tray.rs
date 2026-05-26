@@ -35,55 +35,11 @@ struct TooltipHoverState {
 }
 
 pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
-    let settings = MenuItem::with_id(app, "settings", "设置", true, None::<&str>)?;
-    let autostart_enabled = autostart::is_enabled(app).unwrap_or(false);
-    let autostart = CheckMenuItem::with_id(
-        app,
-        "autostart",
-        "开机自启动",
-        true,
-        autostart_enabled,
-        None::<&str>,
-    )?;
-
-    let floating_enabled = app
+    let config = app
         .try_state::<AppState>()
-        .and_then(|state| {
-            state
-                .config
-                .read()
-                .ok()
-                .map(|config| config.floating_bar.enabled)
-        })
-        .unwrap_or(false);
-    let floating = CheckMenuItem::with_id(
-        app,
-        "floating",
-        "Windows mini 悬浮条",
-        true,
-        floating_enabled,
-        None::<&str>,
-    )?;
-    let close_floating =
-        MenuItem::with_id(app, "close-floating", "关闭悬浮窗", true, None::<&str>)?;
-    let logs = MenuItem::with_id(app, "logs", "打开日志目录", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-    let separator_a = PredefinedMenuItem::separator(app)?;
-    let separator_b = PredefinedMenuItem::separator(app)?;
-
-    let menu = Menu::with_items(
-        app,
-        &[
-            &settings,
-            &autostart,
-            &separator_a,
-            &floating,
-            &close_floating,
-            &logs,
-            &separator_b,
-            &quit,
-        ],
-    )?;
+        .and_then(|state| state.config.read().ok().map(|config| config.clone()))
+        .unwrap_or_default();
+    let menu = build_menu(app, &config)?;
 
     let app_for_event = app.clone();
     let tooltip_hover = Arc::new(Mutex::new(TooltipHoverState::default()));
@@ -129,6 +85,51 @@ pub fn create_tray(app: &AppHandle) -> tauri::Result<()> {
     spawn_tooltip_watchdog(app, tooltip_hover);
 
     Ok(())
+}
+
+pub fn sync_menu_state(app: &AppHandle, config: &AppConfig) -> tauri::Result<()> {
+    let Some(tray) = app.tray_by_id(TRAY_ID) else {
+        return Ok(());
+    };
+    tray.set_menu(Some(build_menu(app, config)?))
+}
+
+fn build_menu(app: &AppHandle, config: &AppConfig) -> tauri::Result<Menu<tauri::Wry>> {
+    let settings = MenuItem::with_id(app, "settings", "设置", true, None::<&str>)?;
+    let autostart_enabled = autostart::is_enabled(app).unwrap_or(config.autostart);
+    let autostart = CheckMenuItem::with_id(
+        app,
+        "autostart",
+        "开机自启动",
+        true,
+        autostart_enabled,
+        None::<&str>,
+    )?;
+    let floating = CheckMenuItem::with_id(
+        app,
+        "floating",
+        "Windows mini 悬浮条",
+        true,
+        config.floating_bar.enabled,
+        None::<&str>,
+    )?;
+    let logs = MenuItem::with_id(app, "logs", "打开日志目录", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+    let separator_a = PredefinedMenuItem::separator(app)?;
+    let separator_b = PredefinedMenuItem::separator(app)?;
+
+    Menu::with_items(
+        app,
+        &[
+            &settings,
+            &autostart,
+            &separator_a,
+            &floating,
+            &logs,
+            &separator_b,
+            &quit,
+        ],
+    )
 }
 
 pub fn update_tray(app: &AppHandle, snapshot: &MetricsSnapshot, _config: &AppConfig) {
@@ -333,14 +334,6 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
         "floating" => {
             let _ = mutate_config(app, |config| {
                 config.floating_bar.enabled = !config.floating_bar.enabled;
-            })
-            .and_then(|config| {
-                floating_bar::apply_config(app, &config).map_err(|err| err.to_string())
-            });
-        }
-        "close-floating" => {
-            let _ = mutate_config(app, |config| {
-                config.floating_bar.enabled = false;
             })
             .and_then(|config| {
                 floating_bar::apply_config(app, &config).map_err(|err| err.to_string())

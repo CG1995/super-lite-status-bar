@@ -4,6 +4,24 @@ All notable project changes are documented here.
 
 所有重要变更都会记录在这里。
 
+## [0.1.1] - 2026-05-26
+
+### English
+
+#### Fixed
+
+- Removed the duplicate tray menu action `Close floating window`; the checked `Windows mini floating bar` item now owns both open and close behavior.
+- Kept the tray menu check states synchronized with persisted configuration after config changes.
+- Fixed settings-window synchronization when autostart is toggled from the tray menu while the settings window is already open.
+
+### 中文
+
+#### 修复
+
+- 移除右键菜单里重复的 `关闭悬浮窗` 项；现在只保留 `Windows mini 悬浮条` 勾选项来负责开启和关闭。
+- 配置变化后会同步刷新右键菜单的勾选状态。
+- 修复在设置窗口已打开时，从托盘右键菜单切换“开机自启动”后设置界面不同步的问题。
+
 ## [0.1.0] - 2026-05-26
 
 ### English
