@@ -1,8 +1,8 @@
 [package]
-name = "super-lite-status-bar"
+name = "pulsering"
 version = "1.0.0"
 description = "A quiet system status tray and menu bar monitor."
-authors = ["Codex"]
+authors = ["CG1995"]
 edition = "2021"
 rust-version = "1.77.2"
 

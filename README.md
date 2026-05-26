@@ -15,7 +15,7 @@ Windows builds are published on the [GitHub Releases page](https://github.com/CG
 
 - Recommended: `PulseRing_1.0.0_x64-setup.exe`
 - Alternative installer: `PulseRing_1.0.0_x64_en-US.msi`
-- Portable executable: `super-lite-status-bar.exe`
+- Portable executable: `PulseRing_1.0.0_x64-portable.exe`
 
 The current Windows artifacts are unsigned, so Windows may show a SmartScreen warning on first launch.
 
@@ -115,6 +115,7 @@ Windows packaging produces:
 ```text
 src-tauri/target/release/bundle/nsis/PulseRing_1.0.0_x64-setup.exe
 src-tauri/target/release/bundle/msi/PulseRing_1.0.0_x64_en-US.msi
+src-tauri/target/release/PulseRing_1.0.0_x64-portable.exe
 ```
 
 ## Security And Privacy

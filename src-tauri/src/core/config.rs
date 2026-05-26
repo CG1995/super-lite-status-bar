@@ -26,8 +26,8 @@ pub struct ConfigStore {
 
 impl ConfigStore {
     pub fn default_path() -> Result<PathBuf, ConfigError> {
-        let dirs = ProjectDirs::from("com", "Codex", "SuperLiteStatusBar")
-            .ok_or(ConfigError::MissingConfigDir)?;
+        let dirs =
+            ProjectDirs::from("com", "CG1995", "PulseRing").ok_or(ConfigError::MissingConfigDir)?;
         Ok(dirs.config_dir().join("config.json"))
     }
 

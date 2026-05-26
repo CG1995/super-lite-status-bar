@@ -212,11 +212,11 @@ pub fn request_quit(app: &AppHandle) {
 fn main() {
     let log_dir = logger::init().unwrap_or_else(|err| {
         eprintln!("failed to initialize logger: {err}");
-        std::env::temp_dir().join("super-lite-status-bar-logs")
+        std::env::temp_dir().join("pulsering-logs")
     });
     let config_store = ConfigStore::new_default().unwrap_or_else(|err| {
         eprintln!("failed to locate config directory: {err}");
-        ConfigStore::new(std::env::temp_dir().join("super-lite-status-bar-config.json"))
+        ConfigStore::new(std::env::temp_dir().join("pulsering-config.json"))
     });
     let config = config_store.load();
 

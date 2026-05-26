@@ -21,6 +21,7 @@ First public Windows build under the name **PulseRing**.
 - Settings synchronization through the shared persisted config and `config-updated` event.
 - Log directory support.
 - Windows NSIS setup executable and MSI installer packaging.
+- Unified portable executable naming as `PulseRing_1.0.0_x64-portable.exe`.
 - Unit tests for config, network speed, GPU parsing and metric formatting.
 
 #### Known limitations
@@ -48,6 +49,7 @@ First public Windows build under the name **PulseRing**.
 - 设置通过同一份持久化配置和 `config-updated` 事件同步。
 - 支持日志目录。
 - 支持 Windows NSIS exe 安装器和 MSI 安装包打包。
+- 统一免安装可执行文件命名为 `PulseRing_1.0.0_x64-portable.exe`。
 - 覆盖配置、网络速度、GPU 解析、指标格式化等单元测试。
 
 #### 已知限制

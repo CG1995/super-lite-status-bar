@@ -25,7 +25,7 @@ pub fn init() -> Result<PathBuf, String> {
 }
 
 pub fn log_dir() -> Result<PathBuf, String> {
-    let dirs = ProjectDirs::from("com", "Codex", "SuperLiteStatusBar")
+    let dirs = ProjectDirs::from("com", "CG1995", "PulseRing")
         .ok_or_else(|| "log directory is not available".to_string())?;
     Ok(dirs.data_local_dir().join("logs"))
 }

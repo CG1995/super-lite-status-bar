@@ -71,7 +71,7 @@ Windows 托盘不要显示长状态文本。它不可读，也不符合平台交
   - Simplified auto-save settings UI.
 - `ui/floating_bar/floating.js`
   - Compact floating window.
-  - Provides a hover-only lock control. Other floating-window options live in the main settings panel.
+  - Provides a hover-only pin control. Other floating-window options live in the main settings panel.
 - `ui/components/state.js`
   - Tauri command bridge and local mock fallback.
 - `ui/components/format.js`
@@ -84,7 +84,8 @@ Windows 托盘不要显示长状态文本。它不可读，也不符合平台交
 - Release executable runs from:
 
 ```text
-src-tauri/target/release/super-lite-status-bar.exe
+src-tauri/target/release/pulsering.exe
+src-tauri/target/release/PulseRing_1.0.0_x64-portable.exe
 ```
 
 Observed release process memory during local runs was roughly 35-46 MB working set.
@@ -112,7 +113,7 @@ Observed release process memory during local runs was roughly 35-46 MB working s
 
 - Do not commit tokens, GitHub PATs, local logs, local config, installer secrets or signing certificates.
 - Do not put user-specific paths in documentation except examples.
-- Keep `src-tauri/target/`, `src-tauri/gen/`, logs and temp files out of git.
+- Keep `src-tauri/target/`, generated Tauri schemas, logs and temp files out of git.
 - If a secret was ever pasted into chat or local notes, treat it as compromised and rotate it outside the repository.
 
 ## Handoff Notes For Vibecoding
