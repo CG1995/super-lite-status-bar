@@ -1,7 +1,7 @@
 # PulseRing
 
 <p align="center">
-  <img src="./docs/assets/pulsering-logo.svg" alt="PulseRing logo" width="112">
+  <img src="./src-tauri/icons/128x128.png" alt="PulseRing app icon" width="112">
 </p>
 
 PulseRing is a quiet Tauri 2 desktop utility for Windows 10/11 and macOS. It lives in the system tray or menu bar and gives you a quick read on CPU, memory, GPU and network activity without opening a full monitoring dashboard.
