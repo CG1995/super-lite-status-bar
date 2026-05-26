@@ -8,8 +8,8 @@ Super Lite Status Bar is a lightweight Tauri 2 desktop utility for Windows 10/11
 
 Windows builds are published on the [GitHub Releases page](https://github.com/CG1995/super-lite-status-bar/releases/latest).
 
-- Recommended: `Super Lite Status Bar_0.1.0_x64-setup.exe`
-- Alternative installer: `Super Lite Status Bar_0.1.0_x64_en-US.msi`
+- Recommended: `Super-Lite-Status-Bar_0.1.0_x64-setup.exe`
+- Alternative installer: `Super-Lite-Status-Bar_0.1.0_x64_en-US.msi`
 - Portable executable: `super-lite-status-bar.exe`
 
 The current Windows artifacts are unsigned, so Windows may show a SmartScreen warning on first launch.
