@@ -100,4 +100,4 @@ src-tauri/target/release/bundle/msi/PulseRing_1.0.0_x64_en-US.msi
 
 项目 License 尚未由项目所有者最终确认。
 
-<sub>🥳 我的第一个 vibe coding 项目：把一点点灵感，做成了任务栏里安静跳动的脉搏。</sub>
+<sub>🥳 我的第一个 vibe coding 项目。</sub>
