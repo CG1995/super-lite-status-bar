@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="PulseRing logo">
+  <defs>
+    <linearGradient id="ring" x1="36" y1="212" x2="220" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0a4fe8"/>
+      <stop offset="0.55" stop-color="#1769ff"/>
+      <stop offset="1" stop-color="#5aa0ff"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0d2d71" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <path filter="url(#softShadow)" fill="url(#ring)" fill-rule="evenodd" d="M128 22c58.542 0 106 47.458 106 106s-47.458 106-106 106S22 186.542 22 128 69.458 22 128 22Zm0 34c-39.765 0-72 32.235-72 72s32.235 72 72 72 72-32.235 72-72-32.235-72-72-72Z"/>
+  <path fill="#d8e8ff" fill-opacity="0.9" d="M79 137h21l13-38 26 72 17-54h21v22h-6l-18 57h-27l-14-40-6 20H79z"/>
+</svg>

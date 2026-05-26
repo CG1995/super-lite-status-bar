@@ -1,5 +1,9 @@
 # PulseRing
 
+<p align="center">
+  <img src="./docs/assets/pulsering-logo.svg" alt="PulseRing logo" width="112">
+</p>
+
 PulseRing is a quiet Tauri 2 desktop utility for Windows 10/11 and macOS. It lives in the system tray or menu bar and gives you a quick read on CPU, memory, GPU and network activity without opening a full monitoring dashboard.
 
 中文名：脉环  
@@ -14,6 +18,16 @@ Windows builds are published on the [GitHub Releases page](https://github.com/CG
 - Portable executable: `super-lite-status-bar.exe`
 
 The current Windows artifacts are unsigned, so Windows may show a SmartScreen warning on first launch.
+
+## Preview
+
+<p align="center">
+  <img src="./docs/assets/tray-status-popup.svg" alt="Tray hover status popup" width="560">
+</p>
+
+<p align="center">
+  <img src="./docs/assets/floating-window-preview.svg" alt="Mini floating window" width="560">
+</p>
 
 ## What It Monitors
 

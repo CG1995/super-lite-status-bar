@@ -1,5 +1,9 @@
 # 脉环
 
+<p align="center">
+  <img src="./docs/assets/pulsering-logo.svg" alt="脉环 logo" width="112">
+</p>
+
 脉环是一个基于 Tauri 2 的轻量桌面状态工具，面向 Windows 10/11 和 macOS。它常驻托盘或菜单栏，用一个安静的小入口显示 CPU、内存、显卡和网络状态，不打扰，也不抢屏幕。
 
 English name: PulseRing  
@@ -14,6 +18,16 @@ Windows 构建产物发布在 [GitHub Releases 页面](https://github.com/CG1995
 - 免安装可执行文件：`super-lite-status-bar.exe`
 
 当前 Windows 产物尚未做代码签名，首次运行时 Windows 可能会出现 SmartScreen 提示。
+
+## 预览
+
+<p align="center">
+  <img src="./docs/assets/tray-status-popup.svg" alt="托盘悬停状态弹窗" width="560">
+</p>
+
+<p align="center">
+  <img src="./docs/assets/floating-window-preview.svg" alt="mini 悬浮窗" width="560">
+</p>
 
 ## 监控指标
 
