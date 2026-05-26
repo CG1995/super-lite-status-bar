@@ -1,7 +1,7 @@
 [package]
 name = "super-lite-status-bar"
-version = "0.1.2"
-description = "A lightweight system status tray and menu bar monitor."
+version = "1.0.0"
+description = "A quiet system status tray and menu bar monitor."
 authors = ["Codex"]
 edition = "2021"
 rust-version = "1.77.2"

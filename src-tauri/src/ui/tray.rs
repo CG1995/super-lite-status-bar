@@ -108,7 +108,7 @@ fn build_menu(app: &AppHandle, config: &AppConfig) -> tauri::Result<Menu<tauri::
     let floating = CheckMenuItem::with_id(
         app,
         "floating",
-        "Windows mini 悬浮条",
+        "悬浮窗",
         true,
         config.floating_bar.enabled,
         None::<&str>,

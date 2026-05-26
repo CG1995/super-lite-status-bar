@@ -1,127 +1,57 @@
 # Changelog / 变更记录
 
-All notable project changes are documented here.
-
-所有重要变更都会记录在这里。
-
-## [0.1.2] - 2026-05-26
+## [1.0.0] - 2026-05-26
 
 ### English
 
-#### Added
+First public Windows build under the name **PulseRing**.
 
-- Replaced the app icon set with the transparent royal-blue ring logo.
-- Added a hover-only lock control on the Windows mini floating bar.
-- Added a mini floating bar context menu for lock state, click-through state and opacity.
-- Added a lightweight floating-window cursor watchdog so locked click-through mode can still temporarily receive hover/right-click interactions when the cursor enters the bar area.
+#### Included
 
-#### Changed
-
-- The mini floating bar can be moved only when unlocked.
-- When click-through and locked are both enabled, the app restores Windows click-through after the cursor leaves the mini floating bar area.
-- Floating bar settings changed from the mini context menu and the main settings window now share the same persisted config and update through the same `config-updated` event.
-
-### 中文
-
-#### 新增
-
-- 将应用图标替换为透明背景的宝蓝色环形 logo。
-- Windows mini 悬浮条增加仅在鼠标悬停时出现的小锁按钮。
-- Windows mini 悬浮条增加右键菜单，可调整锁定、点击穿透和透明度。
-- 增加轻量级悬浮窗鼠标位置 watchdog，使锁定且点击穿透时，鼠标进入悬浮条区域仍可临时接收悬停和右键交互。
-
-#### 变更
-
-- mini 悬浮条只有在解锁状态下才能拖动。
-- 同时开启点击穿透和锁定时，鼠标离开 mini 悬浮条区域后会恢复 Windows 点击穿透。
-- mini 右键菜单和正式设置页共用同一份持久化配置，并通过 `config-updated` 事件互相同步。
-
-## [0.1.1] - 2026-05-26
-
-### English
-
-#### Fixed
-
-- Removed the duplicate tray menu action `Close floating window`; the checked `Windows mini floating bar` item now owns both open and close behavior.
-- Kept the tray menu check states synchronized with persisted configuration after config changes.
-- Fixed settings-window synchronization when autostart is toggled from the tray menu while the settings window is already open.
-
-### 中文
-
-#### 修复
-
-- 移除右键菜单里重复的 `关闭悬浮窗` 项；现在只保留 `Windows mini 悬浮条` 勾选项来负责开启和关闭。
-- 配置变化后会同步刷新右键菜单的勾选状态。
-- 修复在设置窗口已打开时，从托盘右键菜单切换“开机自启动”后设置界面不同步的问题。
-
-## [0.1.0] - 2026-05-26
-
-### English
-
-#### Added
-
-- Initial Tauri 2 + Rust implementation.
-- Windows tray-only status monitor with custom hover popup.
-- CPU, memory, network upload and download sampling.
+- Tauri 2 + Rust implementation.
+- Windows tray-only status monitor with a transparent royal-blue ring icon.
+- Compact tray hover popup for CPU, memory, GPU and network.
+- CPU, memory, network upload/download sampling.
 - Best-effort NVIDIA GPU metrics through `nvidia-smi`.
-- Compact Windows hover popup with CPU / memory / GPU / network rows.
-- Lightweight cursor watchdog for more reliable tray popup show/hide behavior.
-- Right-click tray menu with settings, autostart, floating bar control, logs and quit.
-- Optional Windows mini floating bar.
 - Persistent local configuration with corruption backup fallback.
-- Tauri autostart plugin integration.
-- Tauri single-instance plugin integration.
+- Real autostart integration through the Tauri autostart plugin.
+- Single-instance behavior through the Tauri single-instance plugin.
+- Optional floating window with hover-only lock control.
+- Floating-window options in the main settings panel: enabled, opacity, always on top, lock position, click-through and reset position.
+- Settings synchronization through the shared persisted config and `config-updated` event.
 - Log directory support.
 - Windows NSIS setup executable and MSI installer packaging.
 - Unit tests for config, network speed, GPU parsing and metric formatting.
 
-#### Changed
+#### Known limitations
 
-- Removed the large status panel window from Windows UX.
-- Simplified settings to only keep practical controls.
-- Fixed refresh interval to 1 second.
-- Forced all core indicators to remain enabled by default.
-- Removed Windows tray text usage to avoid unreadable tray content.
-- Shortened GPU display names for compact UI.
-
-#### Known Limitations
-
-- macOS menu bar text mode still needs real-device validation.
+- Windows artifacts are unsigned.
+- macOS menu bar behavior still needs real-device validation.
 - GPU support is currently strongest for NVIDIA on Windows.
-- Windows installer artifacts are available, but still unsigned and need clean-machine validation.
-- Final production icon is not finalized.
 
 ### 中文
 
-#### 新增
+以 **脉环** 为名发布的第一个 Windows 公开版本。
 
-- 初始 Tauri 2 + Rust 实现。
-- Windows 托盘常驻监控，使用自定义悬停状态弹窗。
+#### 包含
+
+- Tauri 2 + Rust 实现。
+- Windows 托盘常驻监控，使用透明背景的宝蓝色环形图标。
+- 托盘悬停弹窗显示 CPU、内存、GPU、网络。
 - CPU、内存、网络上传 / 下载采样。
 - 通过 `nvidia-smi` 尝试获取 NVIDIA GPU 指标。
-- Windows 悬停弹窗显示 CPU / 内存 / GPU / 网络四行数据。
-- 增加轻量级鼠标位置 watchdog，提高托盘弹窗出现 / 消失可靠性。
-- 右键菜单支持设置、开机自启动、悬浮条控制、日志和退出。
-- 可选 Windows mini 悬浮条。
 - 本地配置持久化，配置损坏时自动备份并恢复默认。
-- 接入 Tauri autostart 插件。
-- 接入 Tauri single-instance 插件。
+- 通过 Tauri autostart 插件实现真实开机自启动。
+- 通过 Tauri single-instance 插件实现单实例。
+- 可选悬浮窗，悬浮窗只保留悬停出现的小锁。
+- 悬浮窗设置集中在正式设置页：开启、透明度、置顶、锁定位置、点击穿透、恢复默认位置。
+- 设置通过同一份持久化配置和 `config-updated` 事件同步。
 - 支持日志目录。
 - 支持 Windows NSIS exe 安装器和 MSI 安装包打包。
 - 覆盖配置、网络速度、GPU 解析、指标格式化等单元测试。
 
-#### 变更
-
-- 移除 Windows 上的大型系统状态面板窗口。
-- 精简设置页，只保留实际有用的控制项。
-- 刷新间隔固定为 1 秒。
-- 默认强制显示所有核心指标。
-- 不再在 Windows 托盘区域显示长文本，避免文字过小。
-- 缩短 GPU 名称，适配紧凑 UI。
-
 #### 已知限制
 
-- macOS 菜单栏短文本模式仍需真机验证。
+- Windows 产物尚未签名。
+- macOS 菜单栏行为仍需真机验证。
 - GPU 支持目前主要覆盖 Windows NVIDIA。
-- Windows 安装产物已可用，但仍未签名，正式发布前需要干净机器验证。
-- 最终生产 logo 尚未定稿。

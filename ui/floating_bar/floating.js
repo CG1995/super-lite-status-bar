@@ -8,39 +8,18 @@ export function renderFloatingBar(root, api, config, initialMetrics) {
     <section class="floating-wrap" data-floating-wrap>
       <section class="floating" data-floating></section>
       <button class="floating-lock" type="button" data-floating-lock aria-label="锁定悬浮条"></button>
-      <section class="floating-menu" data-floating-menu hidden>
-        <label class="floating-menu-row">
-          <span>锁定</span>
-          <input type="checkbox" data-floating-menu-lock />
-        </label>
-        <label class="floating-menu-row">
-          <span>点击穿透</span>
-          <input type="checkbox" data-floating-menu-click-through />
-        </label>
-        <label class="floating-menu-range">
-          <span>透明度</span>
-          <input type="range" min="0.35" max="1" step="0.05" data-floating-menu-opacity />
-        </label>
-      </section>
     </section>
   `;
 
   const wrap = root.querySelector("[data-floating-wrap]");
   const bar = root.querySelector("[data-floating]");
   const lockButton = root.querySelector("[data-floating-lock]");
-  const menu = root.querySelector("[data-floating-menu]");
-  const menuLock = root.querySelector("[data-floating-menu-lock]");
-  const menuClickThrough = root.querySelector("[data-floating-menu-click-through]");
-  const menuOpacity = root.querySelector("[data-floating-menu-opacity]");
 
   const syncControls = () => {
     const locked = Boolean(config.floating_bar.lock_position);
     wrap.classList.toggle("is-locked", locked);
     lockButton.dataset.locked = String(locked);
     lockButton.setAttribute("aria-pressed", String(locked));
-    menuLock.checked = locked;
-    menuClickThrough.checked = Boolean(config.floating_bar.click_through);
-    menuOpacity.value = String(config.floating_bar.opacity ?? 0.92);
   };
 
   const render = (snapshot) => {
@@ -60,7 +39,7 @@ export function renderFloatingBar(root, api, config, initialMetrics) {
   });
 
   wrap.addEventListener("mousedown", async (event) => {
-    if (event.target.closest("[data-floating-lock], [data-floating-menu]")) return;
+    if (event.target.closest("[data-floating-lock]")) return;
     if (!config.floating_bar.lock_position && event.button === 0) {
       await api.startDragging();
       clearTimeout(dragTimer);
@@ -80,37 +59,6 @@ export function renderFloatingBar(root, api, config, initialMetrics) {
 
   wrap.addEventListener("contextmenu", (event) => {
     event.preventDefault();
-    syncControls();
-    menu.hidden = false;
-  });
-
-  window.addEventListener("click", (event) => {
-    if (!event.target.closest("[data-floating-menu]")) {
-      menu.hidden = true;
-    }
-  });
-
-  menuLock.addEventListener("change", async () => {
-    config = await updateFloatingConfig(api, config, { lock_position: menuLock.checked });
-    render(currentMetrics);
-  });
-
-  menuClickThrough.addEventListener("change", async () => {
-    config = await updateFloatingConfig(api, config, {
-      click_through: menuClickThrough.checked
-    });
-    render(currentMetrics);
-  });
-
-  menuOpacity.addEventListener("input", () => {
-    bar.style.opacity = String(menuOpacity.value);
-  });
-
-  menuOpacity.addEventListener("change", async () => {
-    config = await updateFloatingConfig(api, config, {
-      opacity: Number(menuOpacity.value)
-    });
-    render(currentMetrics);
   });
 }
 

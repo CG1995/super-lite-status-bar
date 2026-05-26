@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Super Lite Status Bar",
-  "version": "0.1.2",
+  "productName": "PulseRing",
+  "version": "1.0.0",
   "identifier": "com.codex.superlitestatusbar",
   "build": {
     "frontendDist": "../ui"
@@ -11,7 +11,7 @@
     "windows": [
       {
         "label": "settings",
-        "title": "Super Lite Status Bar Settings",
+        "title": "PulseRing Settings",
         "url": "index.html#settings",
         "width": 760,
         "height": 520,
@@ -64,7 +64,7 @@
       "icons/icon.ico"
     ],
     "category": "Utility",
-    "shortDescription": "Lightweight system status monitor.",
-    "longDescription": "A lightweight Windows tray and macOS menu bar system status monitor."
+    "shortDescription": "Quiet system status monitor.",
+    "longDescription": "A quiet Windows tray and macOS menu bar system status monitor."
   }
 }

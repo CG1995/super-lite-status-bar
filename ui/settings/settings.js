@@ -7,8 +7,8 @@ export async function renderSettings(root, api, config) {
     <form class="settings" data-settings>
       <header class="settings-header">
         <div>
-          <h1>Super Lite Status Bar</h1>
-          <p>${isWindows ? "Windows 托盘系统状态监控" : "macOS 菜单栏系统状态监控"}</p>
+          <h1>${isWindows ? "脉环" : "PulseRing"}</h1>
+          <p>${isWindows ? "Windows 托盘状态监测" : "macOS 菜单栏状态监测"}</p>
         </div>
         <span class="autosave-state" data-status>自动保存</span>
       </header>
@@ -24,7 +24,7 @@ export async function renderSettings(root, api, config) {
       </section>
 
       ${isWindows ? `<section class="settings-section">
-        <h2>Windows mini 悬浮条</h2>
+        <h2>悬浮窗</h2>
         ${toggle("floating_bar.enabled", "开启", config.floating_bar.enabled)}
         ${range("floating_bar.opacity", "透明度", config.floating_bar.opacity, 0.35, 1, 0.05)}
         ${toggle("floating_bar.always_on_top", "置顶", config.floating_bar.always_on_top)}

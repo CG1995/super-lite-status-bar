@@ -239,7 +239,7 @@ fn main() {
             spawn_metrics_loop(&app_handle, &state);
             ui::floating_bar::spawn_interaction_watchdog(&app_handle, state.shutdown.clone());
 
-            tracing::info!("Super Lite Status Bar started");
+            tracing::info!("PulseRing started");
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -250,7 +250,7 @@ fn main() {
             _ => {}
         })
         .run(tauri::generate_context!())
-        .expect("error while running Super Lite Status Bar");
+        .expect("error while running PulseRing");
 }
 
 fn spawn_metrics_loop(app: &AppHandle, state: &AppState) {

@@ -8,25 +8,25 @@ This document is written for future maintainers and AI coding agents that need t
 
 ### English
 
-Super Lite Status Bar is intentionally small and quiet. It should not become a full monitoring suite. The primary workflow is:
+PulseRing is intentionally small and quiet. It should not become a full monitoring suite. The primary workflow is:
 
 1. App starts silently.
 2. Windows tray icon stays visible.
 3. Hover over the icon to see CPU, memory, GPU and network details.
 4. Right-click for settings and quit.
-5. Optional Windows mini floating bar is available, but disabled by default.
+5. Optional floating window is available, but disabled by default.
 
 Windows tray text must not be used for long status strings. It is unreadable and conflicts with the platform's UI model.
 
 ### 中文
 
-Super Lite Status Bar 的定位是小、轻、安静。它不应该演变成复杂监控软件。核心流程是：
+脉环的定位是小、轻、安静。它不应该演变成复杂监控软件。核心流程是：
 
 1. 应用静默启动。
 2. Windows 托盘显示图标。
 3. 鼠标悬停图标查看 CPU、内存、GPU、网络详情。
 4. 右键打开设置和退出。
-5. Windows mini 悬浮条可选开启，默认关闭。
+5. 悬浮窗可选开启，默认关闭。
 
 Windows 托盘不要显示长状态文本。它不可读，也不符合平台交互习惯。
 
@@ -58,7 +58,7 @@ Windows 托盘不要显示长状态文本。它不可读，也不符合平台交
   - Uses a 50ms cursor watchdog on Windows to compensate for unreliable tray enter/leave events.
   - Suppresses tooltip briefly when right-clicking so the context menu is not blocked.
 - `ui/floating_bar.rs`
-  - Applies Windows mini floating bar visibility, size, position and click-through.
+  - Applies floating window visibility, size, position and click-through.
   - Uses a lightweight cursor watchdog so locked click-through mode can temporarily restore cursor events while the mouse is over the mini bar. This is required because true OS-level click-through prevents WebView hover, right-click and drag events.
 - `ui/windows.rs`
   - Positions settings and tooltip windows.
@@ -70,8 +70,8 @@ Windows 托盘不要显示长状态文本。它不可读，也不符合平台交
 - `ui/settings/settings.js`
   - Simplified auto-save settings UI.
 - `ui/floating_bar/floating.js`
-  - Compact mini floating bar.
-  - Provides hover-only lock control and a mini context menu for lock, click-through and opacity.
+  - Compact floating window.
+  - Provides a hover-only lock control. Other floating-window options live in the main settings panel.
 - `ui/components/state.js`
   - Tauri command bridge and local mock fallback.
 - `ui/components/format.js`
