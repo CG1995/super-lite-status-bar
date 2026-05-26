@@ -162,8 +162,21 @@ pub fn mutate_config(
 fn persist_config(
     app: &AppHandle,
     state: &AppState,
-    config: AppConfig,
+    mut config: AppConfig,
 ) -> Result<AppConfig, String> {
+    let previous_config = state
+        .config
+        .read()
+        .map(|config| config.clone())
+        .unwrap_or_default();
+    if should_preserve_floating_position(&previous_config, &config) {
+        if let Some((x, y)) =
+            ui::floating_bar::persist_position(app).map_err(|err| err.to_string())?
+        {
+            config.floating_bar.x = Some(x);
+            config.floating_bar.y = Some(y);
+        }
+    }
     let config = config.sanitized();
     state
         .config_store
@@ -175,6 +188,12 @@ fn persist_config(
     app.emit("config-updated", &config)
         .map_err(|err| err.to_string())?;
     Ok(config)
+}
+
+fn should_preserve_floating_position(previous: &AppConfig, next: &AppConfig) -> bool {
+    next.floating_bar.enabled
+        && previous.floating_bar.x == next.floating_bar.x
+        && previous.floating_bar.y == next.floating_bar.y
 }
 
 pub fn open_log_folder(app: &AppHandle) -> Result<String, String> {

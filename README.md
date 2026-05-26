@@ -32,7 +32,7 @@ GPU metrics are capability-based. The app degrades gracefully when GPU data is u
 - Hovering the tray icon shows a compact four-row status popup: CPU, memory, GPU, network.
 - Right-click opens the tray menu: settings, autostart, floating window, logs, quit.
 - Optional floating window can be enabled from settings.
-- The floating window has a hover-only lock control. Other floating-window options live in the main settings panel.
+- The floating window has a hover-only pin control. Other floating-window options live in the main settings panel.
 
 ### macOS
 

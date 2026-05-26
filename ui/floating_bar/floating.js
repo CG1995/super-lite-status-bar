@@ -3,11 +3,12 @@ import { pressureClass, shortSpeed } from "../components/format.js";
 export function renderFloatingBar(root, api, config, initialMetrics) {
   let currentMetrics = initialMetrics;
   let dragTimer = null;
+  document.documentElement.classList.add("floating-window");
   root.className = "floating-shell";
   root.innerHTML = `
     <section class="floating-wrap" data-floating-wrap>
       <section class="floating" data-floating></section>
-      <button class="floating-lock" type="button" data-floating-lock aria-label="锁定悬浮条"></button>
+      <button class="floating-lock" type="button" data-floating-lock aria-label="Pin floating bar"></button>
     </section>
   `;
 
@@ -18,6 +19,7 @@ export function renderFloatingBar(root, api, config, initialMetrics) {
   const syncControls = () => {
     const locked = Boolean(config.floating_bar.lock_position);
     wrap.classList.toggle("is-locked", locked);
+    wrap.classList.toggle("is-click-through", locked && Boolean(config.floating_bar.click_through));
     lockButton.dataset.locked = String(locked);
     lockButton.setAttribute("aria-pressed", String(locked));
   };
@@ -63,7 +65,8 @@ export function renderFloatingBar(root, api, config, initialMetrics) {
 }
 
 async function updateFloatingConfig(api, config, patch) {
-  const next = JSON.parse(JSON.stringify(config));
+  const current = await api.persistFloatingPosition();
+  const next = JSON.parse(JSON.stringify(current));
   Object.assign(next.floating_bar, patch);
   return api.saveConfig(next);
 }

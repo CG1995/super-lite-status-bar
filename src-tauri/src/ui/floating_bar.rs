@@ -108,12 +108,15 @@ fn should_ignore_cursor_events(app: &AppHandle) -> bool {
         return true;
     };
 
-    let pad = 3;
-    let inside = cursor_x >= position.x - pad
-        && cursor_x <= position.x + size.width as i32 + pad
-        && cursor_y >= position.y - pad
-        && cursor_y <= position.y + size.height as i32 + pad;
-    !inside
+    let pin_left = position.x + size.width as i32 - 40;
+    let pin_right = position.x + size.width as i32 + 4;
+    let pin_top = position.y - 6;
+    let pin_bottom = position.y + 32;
+    let over_pin = cursor_x >= pin_left
+        && cursor_x <= pin_right
+        && cursor_y >= pin_top
+        && cursor_y <= pin_bottom;
+    !over_pin
 }
 
 #[cfg(target_os = "windows")]
@@ -132,7 +135,7 @@ fn cursor_position() -> Option<(i32, i32)> {
 
 fn floating_size(config: &AppConfig) -> (f64, f64) {
     let _ = config;
-    (348.0, 62.0)
+    (328.0, 48.0)
 }
 
 pub fn reset_position(app: &AppHandle) -> tauri::Result<()> {

@@ -16,7 +16,7 @@ First public Windows build under the name **PulseRing**.
 - Persistent local configuration with corruption backup fallback.
 - Real autostart integration through the Tauri autostart plugin.
 - Single-instance behavior through the Tauri single-instance plugin.
-- Optional floating window with hover-only lock control.
+- Optional floating window with hover-only pin control.
 - Floating-window options in the main settings panel: enabled, opacity, always on top, lock position, click-through and reset position.
 - Settings synchronization through the shared persisted config and `config-updated` event.
 - Log directory support.
@@ -43,7 +43,7 @@ First public Windows build under the name **PulseRing**.
 - 本地配置持久化，配置损坏时自动备份并恢复默认。
 - 通过 Tauri autostart 插件实现真实开机自启动。
 - 通过 Tauri single-instance 插件实现单实例。
-- 可选悬浮窗，悬浮窗只保留悬停出现的小锁。
+- 可选悬浮窗，悬浮窗只保留悬停出现的 pin 固定按钮。
 - 悬浮窗设置集中在正式设置页：开启、透明度、置顶、锁定位置、点击穿透、恢复默认位置。
 - 设置通过同一份持久化配置和 `config-updated` 事件同步。
 - 支持日志目录。
