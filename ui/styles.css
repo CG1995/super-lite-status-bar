@@ -222,6 +222,11 @@ input[type="range"] {
   padding: 4px;
 }
 
+.floating-wrap {
+  position: relative;
+  width: 100%;
+}
+
 .floating {
   display: flex;
   align-items: center;
@@ -242,6 +247,98 @@ input[type="range"] {
   user-select: none;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.floating-lock {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  min-height: 22px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.floating-wrap:hover .floating-lock,
+.floating-lock:focus-visible,
+.floating-menu:not([hidden]) + .floating-lock {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.floating-lock::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 9px;
+  width: 8px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--text);
+}
+
+.floating-lock::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 4px;
+  width: 8px;
+  height: 9px;
+  border: 2px solid var(--text);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.floating-lock[data-locked="false"]::after {
+  left: 9px;
+  transform: rotate(24deg);
+  transform-origin: 2px 9px;
+}
+
+.floating-menu {
+  position: absolute;
+  top: 30px;
+  right: 2px;
+  z-index: 3;
+  display: grid;
+  gap: 8px;
+  width: 210px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+}
+
+.floating-menu[hidden] {
+  display: none;
+}
+
+.floating-menu-row,
+.floating-menu-range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+  color: var(--text);
+}
+
+.floating-menu-range {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+}
+
+.floating-menu input[type="range"] {
+  width: 100%;
 }
 
 .floating span {

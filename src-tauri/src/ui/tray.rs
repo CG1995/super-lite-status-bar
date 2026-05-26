@@ -350,107 +350,36 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
 }
 
 fn status_icon(level: PressureLevel) -> Image<'static> {
-    let (r, g, b) = match level {
-        PressureLevel::Normal => (90, 196, 138),
-        PressureLevel::Medium => (224, 161, 67),
-        PressureLevel::High => (221, 91, 84),
-    };
+    let _ = level;
     let size = 32_u32;
     let mut rgba = vec![0_u8; (size * size * 4) as usize];
 
     for y in 0..size {
         for x in 0..size {
             let offset = ((y * size + x) * 4) as usize;
-            if rounded_rect_contains(x as f32, y as f32, 3.0, 3.0, 26.0, 26.0, 7.0) {
-                rgba[offset] = 28;
-                rgba[offset + 1] = 36;
-                rgba[offset + 2] = 44;
+            let px = x as f32 + 0.5;
+            let py = y as f32 + 0.5;
+            if ring_contains(px, py) {
+                rgba[offset] = 0x17;
+                rgba[offset + 1] = 0x69;
+                rgba[offset + 2] = 0xff;
                 rgba[offset + 3] = 255;
             }
         }
     }
 
-    draw_bar(&mut rgba, size, 9, 19, 4, 7, (112, 128, 140, 255));
-    draw_bar(&mut rgba, size, 14, 14, 4, 12, (236, 246, 240, 255));
-    draw_bar(&mut rgba, size, 19, 10, 4, 16, (r, g, b, 255));
-    draw_dot(&mut rgba, size, 22, 8, 3, (r, g, b, 255));
-
     Image::new_owned(rgba, size, size)
 }
 
-fn rounded_rect_contains(
-    x: f32,
-    y: f32,
-    left: f32,
-    top: f32,
-    width: f32,
-    height: f32,
-    radius: f32,
-) -> bool {
-    let right = left + width;
-    let bottom = top + height;
-    if x < left || x >= right || y < top || y >= bottom {
+fn ring_contains(x: f32, y: f32) -> bool {
+    let dx = x - 16.0;
+    let dy = y - 16.0;
+    let distance = (dx * dx + dy * dy).sqrt();
+    if !(10.8..=14.2).contains(&distance) {
         return false;
     }
-    let cx = if x < left + radius {
-        left + radius
-    } else if x > right - radius {
-        right - radius
-    } else {
-        x
-    };
-    let cy = if y < top + radius {
-        top + radius
-    } else if y > bottom - radius {
-        bottom - radius
-    } else {
-        y
-    };
-    let dx = x - cx;
-    let dy = y - cy;
-    dx * dx + dy * dy <= radius * radius
-}
-
-fn draw_bar(
-    rgba: &mut [u8],
-    size: u32,
-    x: u32,
-    y: u32,
-    width: u32,
-    height: u32,
-    color: (u8, u8, u8, u8),
-) {
-    for row in y..(y + height) {
-        for col in x..(x + width) {
-            let offset = ((row * size + col) * 4) as usize;
-            rgba[offset] = color.0;
-            rgba[offset + 1] = color.1;
-            rgba[offset + 2] = color.2;
-            rgba[offset + 3] = color.3;
-        }
-    }
-}
-
-fn draw_dot(rgba: &mut [u8], size: u32, x: u32, y: u32, radius: u32, color: (u8, u8, u8, u8)) {
-    let radius = radius as i32;
-    let cx = x as i32;
-    let cy = y as i32;
-    for row in (cy - radius)..=(cy + radius) {
-        for col in (cx - radius)..=(cx + radius) {
-            if row < 0 || col < 0 || row >= size as i32 || col >= size as i32 {
-                continue;
-            }
-            let dx = col - cx;
-            let dy = row - cy;
-            if dx * dx + dy * dy <= radius * radius {
-                let offset = (((row as u32) * size + col as u32) * 4) as usize;
-                rgba[offset] = color.0;
-                rgba[offset + 1] = color.1;
-                rgba[offset + 2] = color.2;
-                rgba[offset + 3] = color.3;
-            }
-        }
-    }
+    let angle = dy.atan2(dx).to_degrees().rem_euclid(360.0);
+    !((262.0..=286.0).contains(&angle) || (34.0..=70.0).contains(&angle))
 }
 
 #[cfg(target_os = "macos")]

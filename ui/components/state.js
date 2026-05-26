@@ -48,6 +48,7 @@ export function createApi() {
     setAutostart: (enabled) => invoke("set_autostart", { enabled }),
     showSettings: () => invoke("show_settings"),
     resetFloatingPosition: () => invoke("reset_floating_position"),
+    persistFloatingPosition: () => invoke("persist_floating_position"),
     showLogFolder: () => invoke("show_log_folder"),
     quit: () => invoke("quit_app"),
     listen: async (event, handler) => {
@@ -93,6 +94,7 @@ function createMockApi() {
     },
     showSettings: async () => {},
     resetFloatingPosition: async () => config,
+    persistFloatingPosition: async () => config,
     showLogFolder: async () => "",
     quit: async () => {},
     listen: async () => () => {},

@@ -3,9 +3,13 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+Add-Type -AssemblyName PresentationCore,WindowsBase
 Add-Type -AssemblyName System.Drawing
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+
+$LogoPathData = "m50 95c-24.801 0-45-20.199-45-45.102 0-23.5 17.602-42.797 40.898-44.898 2.1992-0.19922 4.1016 1.3984 4.3008 3.6016 0.19922 2.1992-1.3984 4.1016-3.6016 4.3008-19.098 1.7969-33.598 17.699-33.598 36.996 0 20.5 16.602 37.102 37 37.102 7.6992 0 15-2.3008 21.301-6.8008 1.8008-1.3008 4.3008-0.89844 5.6016 0.89844 1.3008 1.8008 0.89844 4.3008-0.89844 5.6016-7.7031 5.4023-16.605 8.3008-26.004 8.3008zm34-18.199c-0.80078 0-1.6016-0.19922-2.1992-0.69922-1.8008-1.1992-2.3008-3.6992-1.1016-5.6016 2.8008-4.1016 4.6016-8.6016 5.6016-13.398 0.5-2.3008 0.69922-4.6992 0.69922-7.1992 0-11.102-4.8984-21.5-13.5-28.602-4-3.3008-8.6016-5.6992-13.398-7-2.1016-0.60156-3.3984-2.8008-2.8008-4.8984 0.60156-2.1016 2.8008-3.3984 4.8984-2.8008 5.8984 1.6016 11.398 4.5 16.398 8.6016 10.402 8.6953 16.402 21.297 16.402 34.797 0 3-0.30078 5.8984-0.89844 8.6992-1.1016 5.8984-3.3984 11.398-6.8008 16.398-0.69922 1.1016-2 1.7031-3.3008 1.7031z"
+$LogoColor = [System.Windows.Media.Color]::FromRgb(0x17, 0x69, 0xff)
 
 function New-StatusIconPng {
     param(
@@ -13,77 +17,37 @@ function New-StatusIconPng {
         [string]$Path
     )
 
-    $bmp = New-Object System.Drawing.Bitmap $Size, $Size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
-    $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-    $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-    $g.Clear([System.Drawing.Color]::Transparent)
+    $geometry = [System.Windows.Media.Geometry]::Parse($LogoPathData)
+    $scale = $Size / 110.0
+    $group = [System.Windows.Media.TransformGroup]::new()
+    $group.Children.Add([System.Windows.Media.TranslateTransform]::new(5, 10))
+    $group.Children.Add([System.Windows.Media.ScaleTransform]::new($scale, $scale))
 
-    $pad = [single][Math]::Max(1.0, $Size * 0.11)
-    $radius = [single][Math]::Max(4.0, $Size * 0.20)
-    $rect = [System.Drawing.RectangleF]::new($pad, $pad, [single]($Size - 2 * $pad), [single]($Size - 2 * $pad))
-    $pathObj = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $diameter = $radius * 2
-    $pathObj.AddArc($rect.X, $rect.Y, $diameter, $diameter, 180, 90)
-    $pathObj.AddArc($rect.Right - $diameter, $rect.Y, $diameter, $diameter, 270, 90)
-    $pathObj.AddArc($rect.Right - $diameter, $rect.Bottom - $diameter, $diameter, $diameter, 0, 90)
-    $pathObj.AddArc($rect.X, $rect.Bottom - $diameter, $diameter, $diameter, 90, 90)
-    $pathObj.CloseFigure()
+    $visual = [System.Windows.Media.DrawingVisual]::new()
+    $context = $visual.RenderOpen()
+    $brush = [System.Windows.Media.SolidColorBrush]::new($LogoColor)
+    $context.PushTransform($group)
+    $context.DrawGeometry($brush, $null, $geometry)
+    $context.Pop()
+    $context.Close()
 
-    $bg = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
-        $rect,
-        [System.Drawing.Color]::FromArgb(255, 26, 33, 41),
-        [System.Drawing.Color]::FromArgb(255, 39, 49, 59),
-        [single]35.0
+    $bitmap = [System.Windows.Media.Imaging.RenderTargetBitmap]::new(
+        $Size,
+        $Size,
+        96,
+        96,
+        [System.Windows.Media.PixelFormats]::Pbgra32
     )
-    $g.FillPath($bg, $pathObj)
+    $bitmap.Render($visual)
 
-    $strokeWidth = [single][Math]::Max(1.0, $Size * 0.035)
-    $border = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(190, 230, 236, 240), $strokeWidth)
-    $g.DrawPath($border, $pathObj)
-
-    $accent = [System.Drawing.Color]::FromArgb(255, 90, 196, 138)
-    $accentBrush = New-Object System.Drawing.SolidBrush($accent)
-    $mutedBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 118, 133, 145))
-    $lightBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 236, 246, 240))
-
-    $barWidth = [single][Math]::Max(2.0, $Size * 0.115)
-    $gap = [single][Math]::Max(1.5, $Size * 0.065)
-    $base = [single]($Size * 0.70)
-    $startX = [single](($Size - (3 * $barWidth + 2 * $gap)) / 2)
-    $heights = @([single]($Size * 0.24), [single]($Size * 0.38), [single]($Size * 0.52))
-
-    for ($i = 0; $i -lt 3; $i++) {
-        $x = $startX + $i * ($barWidth + $gap)
-        $h = $heights[$i]
-        $y = $base - $h
-        $barRect = [System.Drawing.RectangleF]::new([single]$x, [single]$y, [single]$barWidth, [single]$h)
-        $barPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-        $barRadius = [single][Math]::Max(1.2, $barWidth * 0.42)
-        $d = $barRadius * 2
-        $barPath.AddArc($barRect.X, $barRect.Y, $d, $d, 180, 90)
-        $barPath.AddArc($barRect.Right - $d, $barRect.Y, $d, $d, 270, 90)
-        $barPath.AddArc($barRect.Right - $d, $barRect.Bottom - $d, $d, $d, 0, 90)
-        $barPath.AddArc($barRect.X, $barRect.Bottom - $d, $d, $d, 90, 90)
-        $barPath.CloseFigure()
-        $g.FillPath($(if ($i -eq 2) { $accentBrush } elseif ($i -eq 1) { $lightBrush } else { $mutedBrush }), $barPath)
-        $barPath.Dispose()
+    $encoder = [System.Windows.Media.Imaging.PngBitmapEncoder]::new()
+    $encoder.Frames.Add([System.Windows.Media.Imaging.BitmapFrame]::Create($bitmap))
+    $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Create)
+    try {
+        $encoder.Save($stream)
+    } finally {
+        $stream.Dispose()
     }
-
-    $dotSize = [single][Math]::Max(2.0, $Size * 0.085)
-    $dotRect = [System.Drawing.RectangleF]::new([single]($Size * 0.66), [single]($Size * 0.235), $dotSize, $dotSize)
-    $g.FillEllipse($accentBrush, $dotRect)
-
-    $bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
-
-    $bg.Dispose()
-    $border.Dispose()
-    $accentBrush.Dispose()
-    $mutedBrush.Dispose()
-    $lightBrush.Dispose()
-    $pathObj.Dispose()
-    $g.Dispose()
-    $bmp.Dispose()
 }
 
 $sizes = @(16, 24, 32, 48, 64, 128, 256)

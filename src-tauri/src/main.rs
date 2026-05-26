@@ -121,6 +121,25 @@ fn reset_floating_position(
 }
 
 #[tauri::command]
+fn persist_floating_position(
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<AppConfig, String> {
+    let Some((x, y)) = ui::floating_bar::persist_position(&app).map_err(|err| err.to_string())?
+    else {
+        return Ok(state
+            .config
+            .read()
+            .map(|config| config.clone())
+            .unwrap_or_default());
+    };
+    let mut config = state.config.read().map_err(|err| err.to_string())?.clone();
+    config.floating_bar.x = Some(x);
+    config.floating_bar.y = Some(y);
+    persist_config(&app, &state, config)
+}
+
+#[tauri::command]
 fn show_log_folder(app: AppHandle) -> Result<String, String> {
     open_log_folder(&app)
 }
@@ -202,6 +221,7 @@ fn main() {
             hide_current_window,
             get_platform,
             reset_floating_position,
+            persist_floating_position,
             show_log_folder,
             quit_app
         ])
@@ -217,6 +237,7 @@ fn main() {
                 .unwrap_or_default();
             ui::floating_bar::apply_config(&app_handle, &config)?;
             spawn_metrics_loop(&app_handle, &state);
+            ui::floating_bar::spawn_interaction_watchdog(&app_handle, state.shutdown.clone());
 
             tracing::info!("Super Lite Status Bar started");
             Ok(())

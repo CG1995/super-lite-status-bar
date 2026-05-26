@@ -52,12 +52,14 @@ Windows 托盘不要显示长状态文本。它不可读，也不符合平台交
 - `core/logger.rs`
   - Initializes file logging.
 - `ui/tray.rs`
-  - Builds tray menu and dynamic icon.
+  - Builds tray menu and the runtime tray icon.
+  - Current runtime tray icon is a transparent royal-blue ring derived from the selected logo direction.
   - Controls custom tooltip hover behavior.
   - Uses a 50ms cursor watchdog on Windows to compensate for unreliable tray enter/leave events.
   - Suppresses tooltip briefly when right-clicking so the context menu is not blocked.
 - `ui/floating_bar.rs`
   - Applies Windows mini floating bar visibility, size, position and click-through.
+  - Uses a lightweight cursor watchdog so locked click-through mode can temporarily restore cursor events while the mouse is over the mini bar. This is required because true OS-level click-through prevents WebView hover, right-click and drag events.
 - `ui/windows.rs`
   - Positions settings and tooltip windows.
 
@@ -69,6 +71,7 @@ Windows 托盘不要显示长状态文本。它不可读，也不符合平台交
   - Simplified auto-save settings UI.
 - `ui/floating_bar/floating.js`
   - Compact mini floating bar.
+  - Provides hover-only lock control and a mini context menu for lock, click-through and opacity.
 - `ui/components/state.js`
   - Tauri command bridge and local mock fallback.
 - `ui/components/format.js`
@@ -90,7 +93,7 @@ Observed release process memory during local runs was roughly 35-46 MB working s
 
 ### Must Do Before Public Release
 
-- Finalize production icon / logo.
+- Validate the new royal-blue ring logo in the Windows taskbar and installer UI.
 - Verify installer packaging on a clean Windows machine.
 - Verify startup-on-login behavior after installation.
 - Test suspend/resume and Explorer restart behavior.

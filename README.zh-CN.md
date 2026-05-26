@@ -8,8 +8,8 @@ English documentation: [README.md](./README.md)
 
 Windows 构建产物发布在 [GitHub Releases 页面](https://github.com/CG1995/super-lite-status-bar/releases/latest)。
 
-- 推荐下载：`Super-Lite-Status-Bar_0.1.1_x64-setup.exe`
-- 备用安装包：`Super-Lite-Status-Bar_0.1.1_x64_en-US.msi`
+- 推荐下载：`Super-Lite-Status-Bar_0.1.2_x64-setup.exe`
+- 备用安装包：`Super-Lite-Status-Bar_0.1.2_x64_en-US.msi`
 - 免安装可执行文件：`super-lite-status-bar.exe`
 
 当前 Windows 产物尚未做代码签名，首次运行时 Windows 可能会出现 SmartScreen 提示。
@@ -128,8 +128,8 @@ cargo tauri build --bundles nsis msi --no-sign --ci
 Windows 打包产物：
 
 ```text
-src-tauri/target/release/bundle/nsis/Super Lite Status Bar_0.1.1_x64-setup.exe
-src-tauri/target/release/bundle/msi/Super Lite Status Bar_0.1.1_x64_en-US.msi
+src-tauri/target/release/bundle/nsis/Super Lite Status Bar_0.1.2_x64-setup.exe
+src-tauri/target/release/bundle/msi/Super Lite Status Bar_0.1.2_x64_en-US.msi
 ```
 
 安装包在正式生产发布前仍需干净机器验证和代码签名。

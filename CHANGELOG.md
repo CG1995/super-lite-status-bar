@@ -4,6 +4,38 @@ All notable project changes are documented here.
 
 所有重要变更都会记录在这里。
 
+## [0.1.2] - 2026-05-26
+
+### English
+
+#### Added
+
+- Replaced the app icon set with the transparent royal-blue ring logo.
+- Added a hover-only lock control on the Windows mini floating bar.
+- Added a mini floating bar context menu for lock state, click-through state and opacity.
+- Added a lightweight floating-window cursor watchdog so locked click-through mode can still temporarily receive hover/right-click interactions when the cursor enters the bar area.
+
+#### Changed
+
+- The mini floating bar can be moved only when unlocked.
+- When click-through and locked are both enabled, the app restores Windows click-through after the cursor leaves the mini floating bar area.
+- Floating bar settings changed from the mini context menu and the main settings window now share the same persisted config and update through the same `config-updated` event.
+
+### 中文
+
+#### 新增
+
+- 将应用图标替换为透明背景的宝蓝色环形 logo。
+- Windows mini 悬浮条增加仅在鼠标悬停时出现的小锁按钮。
+- Windows mini 悬浮条增加右键菜单，可调整锁定、点击穿透和透明度。
+- 增加轻量级悬浮窗鼠标位置 watchdog，使锁定且点击穿透时，鼠标进入悬浮条区域仍可临时接收悬停和右键交互。
+
+#### 变更
+
+- mini 悬浮条只有在解锁状态下才能拖动。
+- 同时开启点击穿透和锁定时，鼠标离开 mini 悬浮条区域后会恢复 Windows 点击穿透。
+- mini 右键菜单和正式设置页共用同一份持久化配置，并通过 `config-updated` 事件互相同步。
+
 ## [0.1.1] - 2026-05-26
 
 ### English
