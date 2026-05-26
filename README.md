@@ -4,6 +4,16 @@ Super Lite Status Bar is a lightweight Tauri 2 desktop utility for Windows 10/11
 
 中文文档: [README.zh-CN.md](./README.zh-CN.md)
 
+## Download
+
+Windows builds are published on the [GitHub Releases page](https://github.com/CG1995/super-lite-status-bar/releases/latest).
+
+- Recommended: `Super Lite Status Bar_0.1.0_x64-setup.exe`
+- Alternative installer: `Super Lite Status Bar_0.1.0_x64_en-US.msi`
+- Portable executable: `super-lite-status-bar.exe`
+
+The current Windows artifacts are unsigned, so Windows may show a SmartScreen warning on first launch.
+
 ## What It Monitors
 
 - CPU total usage
@@ -112,10 +122,17 @@ Tauri bundling is configured in `src-tauri/tauri.conf.json`.
 
 ```powershell
 cd src-tauri
-cargo tauri build
+cargo tauri build --bundles nsis msi --no-sign --ci
 ```
 
-Installer packaging still needs final verification on clean Windows and macOS machines.
+Windows packaging produces:
+
+```text
+src-tauri/target/release/bundle/nsis/Super Lite Status Bar_0.1.0_x64-setup.exe
+src-tauri/target/release/bundle/msi/Super Lite Status Bar_0.1.0_x64_en-US.msi
+```
+
+Installer artifacts still need final clean-machine validation and code signing before a production release.
 
 ## Security And Privacy
 

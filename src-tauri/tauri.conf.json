@@ -52,7 +52,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "dmg"],
+    "targets": ["msi", "nsis", "dmg"],
     "icon": [
       "icons/16x16.png",
       "icons/24x24.png",

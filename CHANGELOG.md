@@ -22,6 +22,7 @@ All notable project changes are documented here.
 - Tauri autostart plugin integration.
 - Tauri single-instance plugin integration.
 - Log directory support.
+- Windows NSIS setup executable and MSI installer packaging.
 - Unit tests for config, network speed, GPU parsing and metric formatting.
 
 #### Changed
@@ -37,7 +38,7 @@ All notable project changes are documented here.
 
 - macOS menu bar text mode still needs real-device validation.
 - GPU support is currently strongest for NVIDIA on Windows.
-- Installer packaging needs clean-machine verification.
+- Windows installer artifacts are available, but still unsigned and need clean-machine validation.
 - Final production icon is not finalized.
 
 ### 中文
@@ -56,6 +57,7 @@ All notable project changes are documented here.
 - 接入 Tauri autostart 插件。
 - 接入 Tauri single-instance 插件。
 - 支持日志目录。
+- 支持 Windows NSIS exe 安装器和 MSI 安装包打包。
 - 覆盖配置、网络速度、GPU 解析、指标格式化等单元测试。
 
 #### 变更
@@ -71,5 +73,5 @@ All notable project changes are documented here.
 
 - macOS 菜单栏短文本模式仍需真机验证。
 - GPU 支持目前主要覆盖 Windows NVIDIA。
-- 安装包仍需干净机器验证。
+- Windows 安装产物已可用，但仍未签名，正式发布前需要干净机器验证。
 - 最终生产 logo 尚未定稿。
