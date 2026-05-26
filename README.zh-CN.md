@@ -1,7 +1,7 @@
 # 脉环
 
 <p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="脉环应用图标" width="112">
+  <img src="./src-tauri/icons/128x128.png" alt="脉环应用图标" width="160">
 </p>
 
 脉环是一个基于 Tauri 2 的轻量桌面状态工具，面向 Windows 10/11 和 macOS。它常驻托盘或菜单栏，用一个安静的小入口显示 CPU、内存、显卡和网络状态，不打扰，也不抢屏幕。
