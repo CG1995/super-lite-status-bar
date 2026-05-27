@@ -17,7 +17,13 @@ Windows 构建产物发布在 [GitHub Releases 页面](https://github.com/CG1995
 - 备用安装包：`PulseRing_1.0.0_x64_en-US.msi`
 - 免安装可执行文件：`PulseRing_1.0.0_x64-portable.exe`
 
+macOS 构建产物也发布在同一个 Releases 页面。
+
+- 推荐下载：`PulseRing_1.0.0_aarch64.dmg`
+- 这个 DMG 由 macOS 上的 Tauri 直接生成，不是改后缀的归档文件。
+
 当前 Windows 产物尚未做代码签名，首次运行时 Windows 可能会出现 SmartScreen 提示。
+当前 macOS 产物尚未做代码签名，首次打开时 macOS 可能仍会提示。
 
 ## 预览
 
@@ -98,6 +104,17 @@ Windows 打包产物：
 src-tauri/target/release/bundle/nsis/PulseRing_1.0.0_x64-setup.exe
 src-tauri/target/release/bundle/msi/PulseRing_1.0.0_x64_en-US.msi
 src-tauri/target/release/PulseRing_1.0.0_x64-portable.exe
+```
+
+macOS 打包：
+
+```bash
+cd /path/to/super-lite-status-bar/src-tauri
+cargo tauri build --bundles dmg --no-sign --ci
+```
+
+```text
+src-tauri/target/release/bundle/dmg/PulseRing_1.0.0_aarch64.dmg
 ```
 
 ## 安全与隐私

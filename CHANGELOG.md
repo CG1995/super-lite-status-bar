@@ -1,5 +1,15 @@
 # Changelog / 变更记录
 
+## [Unreleased]
+
+### English
+
+- macOS releases are now built by a real Tauri DMG workflow and upload the generated `.dmg` directly instead of a renamed archive.
+
+### 中文
+
+- macOS 发布现在通过真实的 Tauri DMG 工作流生成，并直接上传生成的 `.dmg`，不再是改后缀的归档文件。
+
 ## [1.0.0] - 2026-05-26
 
 ### English

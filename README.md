@@ -17,7 +17,13 @@ Windows builds are published on the [GitHub Releases page](https://github.com/CG
 - Alternative installer: `PulseRing_1.0.0_x64_en-US.msi`
 - Portable executable: `PulseRing_1.0.0_x64-portable.exe`
 
+macOS builds are published on the same Releases page.
+
+- Recommended: `PulseRing_1.0.0_aarch64.dmg`
+- The DMG is produced by Tauri on macOS, so it is a real disk image rather than a renamed archive.
+
 The current Windows artifacts are unsigned, so Windows may show a SmartScreen warning on first launch.
+The current macOS artifacts are unsigned, so macOS may still prompt the first time you open the app.
 
 ## Preview
 
@@ -116,6 +122,17 @@ Windows packaging produces:
 src-tauri/target/release/bundle/nsis/PulseRing_1.0.0_x64-setup.exe
 src-tauri/target/release/bundle/msi/PulseRing_1.0.0_x64_en-US.msi
 src-tauri/target/release/PulseRing_1.0.0_x64-portable.exe
+```
+
+macOS packaging produces:
+
+```bash
+cd /path/to/super-lite-status-bar/src-tauri
+cargo tauri build --bundles dmg --no-sign --ci
+```
+
+```text
+src-tauri/target/release/bundle/dmg/PulseRing_1.0.0_aarch64.dmg
 ```
 
 ## Security And Privacy
