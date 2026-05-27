@@ -6,6 +6,7 @@ mod ui;
 use crate::core::{
     autostart,
     config::{AppConfig, ConfigStore},
+    identity::{APP_NAME, APP_SLUG},
     logger,
     system_metrics::{MetricsSnapshot, SystemMetricsSampler},
 };
@@ -212,11 +213,11 @@ pub fn request_quit(app: &AppHandle) {
 fn main() {
     let log_dir = logger::init().unwrap_or_else(|err| {
         eprintln!("failed to initialize logger: {err}");
-        std::env::temp_dir().join("pulsering-logs")
+        std::env::temp_dir().join(format!("{APP_SLUG}-logs"))
     });
     let config_store = ConfigStore::new_default().unwrap_or_else(|err| {
         eprintln!("failed to locate config directory: {err}");
-        ConfigStore::new(std::env::temp_dir().join("pulsering-config.json"))
+        ConfigStore::new(std::env::temp_dir().join(format!("{APP_SLUG}-config.json")))
     });
     let config = config_store.load();
 
@@ -258,7 +259,7 @@ fn main() {
             spawn_metrics_loop(&app_handle, &state);
             ui::floating_bar::spawn_interaction_watchdog(&app_handle, state.shutdown.clone());
 
-            tracing::info!("PulseRing started");
+            tracing::info!(app = APP_NAME, "application started");
             Ok(())
         })
         .on_window_event(|window, event| match event {

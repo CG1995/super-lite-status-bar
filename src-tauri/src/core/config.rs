@@ -1,3 +1,4 @@
+use crate::core::identity::{APP_NAME, APP_ORGANIZATION, APP_QUALIFIER, APP_SLUG};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -26,8 +27,8 @@ pub struct ConfigStore {
 
 impl ConfigStore {
     pub fn default_path() -> Result<PathBuf, ConfigError> {
-        let dirs =
-            ProjectDirs::from("com", "CG1995", "PulseRing").ok_or(ConfigError::MissingConfigDir)?;
+        let dirs = ProjectDirs::from(APP_QUALIFIER, APP_ORGANIZATION, APP_NAME)
+            .ok_or(ConfigError::MissingConfigDir)?;
         Ok(dirs.config_dir().join("config.json"))
     }
 
@@ -90,21 +91,6 @@ impl ConfigStore {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
-pub enum DisplayMode {
-    Icon,
-    Compact,
-    Full,
-    Custom,
-}
-
-impl Default for DisplayMode {
-    fn default() -> Self {
-        Self::Compact
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
 pub enum FontPreset {
     Small,
     Medium,
@@ -115,33 +101,6 @@ pub enum FontPreset {
 impl Default for FontPreset {
     fn default() -> Self {
         Self::Small
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
-pub enum SpeedUnit {
-    Auto,
-    Kb,
-    Mb,
-}
-
-impl Default for SpeedUnit {
-    fn default() -> Self {
-        Self::Auto
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
-pub enum TempUnit {
-    Celsius,
-    Fahrenheit,
-}
-
-impl Default for TempUnit {
-    fn default() -> Self {
-        Self::Celsius
     }
 }
 
@@ -161,14 +120,15 @@ impl Default for ThemeMode {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
-pub enum FloatingLayout {
-    Horizontal,
-    Vertical,
+pub enum SpeedUnit {
+    Auto,
+    Kb,
+    Mb,
 }
 
-impl Default for FloatingLayout {
+impl Default for SpeedUnit {
     fn default() -> Self {
-        Self::Horizontal
+        Self::Auto
     }
 }
 
@@ -199,28 +159,6 @@ impl FontConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(default)]
-pub struct IndicatorToggles {
-    pub cpu: bool,
-    pub memory: bool,
-    pub gpu: bool,
-    pub network_upload: bool,
-    pub network_download: bool,
-}
-
-impl Default for IndicatorToggles {
-    fn default() -> Self {
-        Self {
-            cpu: true,
-            memory: true,
-            gpu: true,
-            network_upload: true,
-            network_download: true,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(default)]
 pub struct FloatingBarConfig {
@@ -229,7 +167,6 @@ pub struct FloatingBarConfig {
     pub always_on_top: bool,
     pub lock_position: bool,
     pub click_through: bool,
-    pub layout: FloatingLayout,
     pub x: Option<f64>,
     pub y: Option<f64>,
 }
@@ -242,7 +179,6 @@ impl Default for FloatingBarConfig {
             always_on_top: true,
             lock_position: false,
             click_through: false,
-            layout: FloatingLayout::Horizontal,
             x: None,
             y: None,
         }
@@ -254,19 +190,12 @@ impl Default for FloatingBarConfig {
 pub struct AppConfig {
     pub version: u32,
     pub autostart: bool,
-    pub launch_hidden: bool,
-    pub display_mode: DisplayMode,
-    pub custom_template: String,
     pub refresh_interval_ms: u64,
     pub font: FontConfig,
     pub speed_unit: SpeedUnit,
-    pub temperature_unit: TempUnit,
-    pub indicators: IndicatorToggles,
     pub floating_bar: FloatingBarConfig,
     pub theme: ThemeMode,
     pub show_na: bool,
-    pub macos_text_enabled: bool,
-    pub macos_max_text_chars: usize,
 }
 
 impl Default for AppConfig {
@@ -274,19 +203,12 @@ impl Default for AppConfig {
         Self {
             version: CONFIG_VERSION,
             autostart: false,
-            launch_hidden: true,
-            display_mode: DisplayMode::Compact,
-            custom_template: "CPU {cpu}% | MEM {mem}% | ↓ {down} | ↑ {up}".to_string(),
             refresh_interval_ms: 1_000,
             font: FontConfig::default(),
             speed_unit: SpeedUnit::Auto,
-            temperature_unit: TempUnit::Celsius,
-            indicators: IndicatorToggles::default(),
             floating_bar: FloatingBarConfig::default(),
             theme: ThemeMode::System,
             show_na: true,
-            macos_text_enabled: true,
-            macos_max_text_chars: 34,
         }
     }
 }
@@ -294,18 +216,12 @@ impl Default for AppConfig {
 impl AppConfig {
     pub fn sanitized(mut self) -> Self {
         self.version = CONFIG_VERSION;
-        self.launch_hidden = true;
-        self.display_mode = DisplayMode::Compact;
         self.refresh_interval_ms = 1_000;
         self.font.preset = FontPreset::Small;
         self.font.custom_px = self.font.custom_px.clamp(12, 28);
         self.speed_unit = SpeedUnit::Auto;
-        self.temperature_unit = TempUnit::Celsius;
-        self.indicators = IndicatorToggles::default();
         self.show_na = true;
-        self.floating_bar.layout = FloatingLayout::Horizontal;
         self.floating_bar.opacity = self.floating_bar.opacity.clamp(0.35, 1.0);
-        self.macos_max_text_chars = self.macos_max_text_chars.clamp(12, 80);
         self
     }
 }
@@ -325,17 +241,21 @@ mod tests {
 
     #[test]
     fn saves_and_loads_config() {
-        let path = temp_config_path("super-lite-status-config");
+        let path = temp_config_path(APP_SLUG);
         let store = ConfigStore::new(&path);
         let mut config = AppConfig::default();
         config.refresh_interval_ms = 5_000;
         config.font.preset = FontPreset::Large;
+        config.speed_unit = SpeedUnit::Mb;
+        config.show_na = false;
 
         store.save(&config).unwrap();
         let loaded = ConfigStore::load_from_path(&path).unwrap();
 
         assert_eq!(loaded.refresh_interval_ms, 1_000);
         assert_eq!(loaded.font.preset, FontPreset::Small);
+        assert_eq!(loaded.speed_unit, SpeedUnit::Auto);
+        assert!(loaded.show_na);
         let _ = fs::remove_file(path);
     }
 

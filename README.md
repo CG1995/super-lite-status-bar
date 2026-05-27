@@ -149,5 +149,3 @@ See [docs/DEVELOPMENT_PROGRESS.md](./docs/DEVELOPMENT_PROGRESS.md) and [CHANGELO
 ## License
 
 License has not been finalized by the project owner.
-
-<sub>🥳 My first vibe coding project.</sub>

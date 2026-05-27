@@ -7,7 +7,7 @@ export async function renderSettings(root, api, config) {
     <form class="settings" data-settings>
       <header class="settings-header">
         <div>
-          <h1>${isWindows ? "脉环" : "PulseRing"}</h1>
+          <h1>PulseRing</h1>
           <p>${isWindows ? "Windows 托盘状态监测" : "macOS 菜单栏状态监测"}</p>
         </div>
         <span class="autosave-state" data-status>自动保存</span>
@@ -97,7 +97,7 @@ export async function renderSettings(root, api, config) {
 
   root.querySelector("[data-reset-floating]")?.addEventListener("click", async () => {
     config = await api.resetFloatingPosition();
-    status.textContent = "悬浮条位置已恢复";
+    status.textContent = "悬浮窗位置已恢复";
   });
 
   root.querySelector("[data-logs]").addEventListener("click", async () => {
@@ -165,23 +165,10 @@ function applyConfigToForm(form, config) {
 }
 
 function normalizeFixedConfig(config) {
-  config.launch_hidden = true;
-  config.display_mode = "compact";
   config.refresh_interval_ms = 1000;
   config.font = { preset: "small", custom_px: 12 };
   config.speed_unit = "auto";
-  config.temperature_unit = "celsius";
-  config.indicators = {
-    cpu: true,
-    memory: true,
-    gpu: true,
-    network_upload: true,
-    network_download: true
-  };
   config.show_na = true;
-  config.macos_text_enabled = true;
-  config.macos_max_text_chars = 34;
-  config.floating_bar.layout = "horizontal";
   return config;
 }
 

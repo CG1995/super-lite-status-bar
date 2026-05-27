@@ -131,5 +131,3 @@ src-tauri/target/release/bundle/dmg/PulseRing_1.0.0_aarch64.dmg
 ## License
 
 项目 License 尚未由项目所有者最终确认。
-
-<sub>🥳 我的第一个 vibe coding 项目。</sub>

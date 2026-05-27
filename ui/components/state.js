@@ -1,30 +1,17 @@
 const fallbackConfig = {
   autostart: false,
-  launch_hidden: true,
-  display_mode: "compact",
   refresh_interval_ms: 1000,
   font: { preset: "small", custom_px: 12 },
   speed_unit: "auto",
-  temperature_unit: "celsius",
-  indicators: {
-    cpu: true,
-    memory: true,
-    gpu: true,
-    network_upload: true,
-    network_download: true
-  },
   floating_bar: {
     enabled: false,
     opacity: 0.92,
     always_on_top: true,
     lock_position: false,
-    click_through: false,
-    layout: "horizontal"
+    click_through: false
   },
   theme: "system",
-  show_na: true,
-  macos_text_enabled: true,
-  macos_max_text_chars: 34
+  show_na: true
 };
 
 export function createApi() {

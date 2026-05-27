@@ -1,8 +1,8 @@
 # Development Progress / 开发进度
 
-This document is written for future maintainers and AI coding agents that need to continue the project without full chat context.
+This document is written for future maintainers and automation that need to continue the project without full chat context.
 
-本文档用于后续维护者或 vibecoding 工具在缺少完整对话上下文时接手项目。
+本文档用于后续维护者或自动化工具在缺少完整对话上下文时接手项目。
 
 ## Product Direction
 
@@ -116,7 +116,7 @@ Observed release process memory during local runs was roughly 35-46 MB working s
 - Keep `src-tauri/target/`, generated Tauri schemas, logs and temp files out of git.
 - If a secret was ever pasted into chat or local notes, treat it as compromised and rotate it outside the repository.
 
-## Handoff Notes For Vibecoding
+## Handoff Notes
 
 When continuing this project:
 

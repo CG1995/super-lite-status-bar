@@ -1,4 +1,5 @@
 use directories::ProjectDirs;
+use crate::core::identity::{APP_NAME, APP_ORGANIZATION, APP_QUALIFIER};
 use std::{path::PathBuf, sync::OnceLock};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, EnvFilter};
@@ -25,7 +26,7 @@ pub fn init() -> Result<PathBuf, String> {
 }
 
 pub fn log_dir() -> Result<PathBuf, String> {
-    let dirs = ProjectDirs::from("com", "CG1995", "PulseRing")
+    let dirs = ProjectDirs::from(APP_QUALIFIER, APP_ORGANIZATION, APP_NAME)
         .ok_or_else(|| "log directory is not available".to_string())?;
     Ok(dirs.data_local_dir().join("logs"))
 }
