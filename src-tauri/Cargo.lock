@@ -2672,7 +2672,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-autostart",
  "tauri-plugin-single-instance",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
