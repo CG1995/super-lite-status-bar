@@ -7,14 +7,14 @@
 - macOS releases are now built by a real Tauri DMG workflow and upload the generated `.dmg` directly instead of a renamed archive.
 - CI now runs formatting, linting and tests on both Windows and macOS.
 - Releases are now driven by a single tag-based GitHub Actions workflow that publishes Windows and macOS assets together.
-- Added contribution, support, security, maintenance, issue template, pull request template and dependency update guidance.
+- Added contribution, support, security, maintenance, issue template and pull request template guidance.
 
 ### 中文
 
 - macOS 发布现在通过真实的 Tauri DMG 工作流生成，并直接上传生成的 `.dmg`，不再是改后缀的归档文件。
 - CI 现在会在 Windows 和 macOS 上同时运行格式检查、静态检查和测试。
 - 发布现在由统一的 tag 驱动 GitHub Actions 工作流处理，Windows 和 macOS 产物会一起发布。
-- 新增贡献、安全、支持、维护、issue 模板、PR 模板和依赖更新配置。
+- 新增贡献、安全、支持、维护、issue 模板和 PR 模板。
 
 ## [1.0.0] - 2026-05-26
 
