@@ -22,18 +22,96 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  rust-tests:
-    name: Rust tests
+  # ── Tests ──────────────────────────────────────────────────────────────
+
+  rust-tests-windows:
+    name: Rust tests (Windows)
     runs-on: windows-latest
     defaults:
       run:
         working-directory: src-tauri
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - run: rustup default stable
+      - run: cargo test
 
-      - name: Use stable Rust
-        run: rustup default stable
+  rust-tests-macos:
+    name: Rust tests (macOS)
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: src-tauri
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup default stable
+      - run: cargo test
 
-      - name: Cargo test
-        run: cargo test
+  # ── Windows Build ──────────────────────────────────────────────────────
+
+  build-windows:
+    name: Build Windows x64
+    runs-on: windows-latest
+    needs: rust-tests-windows
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup default stable
+      - name: Build portable exe
+        run: cargo build --release
+        working-directory: src-tauri
+      - name: Prepare portable exe
+        shell: pwsh
+        run: |
+          Copy-Item "src-tauri/target/release/pulsering.exe" "src-tauri/target/release/PulseRing_1.0.1_x64-portable.exe" -Force
+      - name: Upload portable exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: PulseRing-Windows-x64-portable
+          path: src-tauri/target/release/PulseRing_1.0.1_x64-portable.exe
+          retention-days: 7
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2"
+      - name: Build NSIS installer
+        run: cargo tauri build --bundles nsis --no-sign --ci
+        working-directory: src-tauri
+      - name: Upload NSIS installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: PulseRing-Windows-x64-NSIS-installer
+          path: src-tauri/target/release/bundle/nsis/PulseRing_*_x64-setup.exe
+          retention-days: 7
+
+  # ── macOS Build (ARM64 native + x86_64 cross-compile) ──────────────────
+
+  build-macos:
+    name: Build macOS (ARM64 + x86_64)
+    runs-on: macos-latest
+    needs: rust-tests-macos
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup default stable
+
+      # --- ARM64 (native) ---
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2"
+      - name: Build ARM64 DMG
+        run: cargo tauri build --bundles dmg --no-sign --ci
+        working-directory: src-tauri
+      - name: Upload ARM64 DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: PulseRing-macOS-ARM64-DMG
+          path: src-tauri/target/release/bundle/dmg/PulseRing_*_aarch64.dmg
+          retention-days: 7
+
+      # --- x86_64 (cross-compile via Rosetta 2) ---
+      - name: Add x86_64 target
+        run: rustup target add x86_64-apple-darwin
+      - name: Build x86_64 DMG
+        run: cargo tauri build --bundles dmg --target x86_64-apple-darwin --no-sign --ci
+        working-directory: src-tauri
+      - name: Upload x86_64 DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: PulseRing-macOS-x64-DMG
+          path: src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/PulseRing_*_x64.dmg
+          retention-days: 7

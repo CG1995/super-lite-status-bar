@@ -1,59 +1,33 @@
 # Changelog / 变更记录
 
-## [1.0.0] - 2026-05-26
+## [1.0.1] - 2026-05-27
 
 ### English
 
-First public Windows build under the name **PulseRing**.
+#### Added
+- macOS GPU: VRAM parsing and GPU usage via `ioreg IOAccelerator` (was name-only).
+- Windows AMD/Intel GPU: fallback via WMI (`Win32_VideoController`) when `nvidia-smi` unavailable.
+- macOS floating bar: CoreGraphics cursor tracking (was Windows-only).
+- Tray ring icon now changes color: blue = normal, orange = >=85% load, red = memory >=95%.
+- CI: Windows portable exe + NSIS installer artifacts.
+- CI: macOS DMG dual-architecture — x64 (Intel Mac) and ARM64 (Apple Silicon).
 
-#### Included
-
-- Tauri 2 + Rust implementation.
-- Windows tray-only status monitor with a transparent royal-blue ring icon.
-- Compact tray hover popup for CPU, memory, GPU and network.
-- CPU, memory, network upload/download sampling.
-- Best-effort NVIDIA GPU metrics through `nvidia-smi`.
-- Persistent local configuration with corruption backup fallback.
-- Real autostart integration through the Tauri autostart plugin.
-- Single-instance behavior through the Tauri single-instance plugin.
-- Optional floating window with hover-only pin control.
-- Floating-window options in the main settings panel: enabled, opacity, always on top, lock position, click-through and reset position.
-- Settings synchronization through the shared persisted config and `config-updated` event.
-- Log directory support.
-- Windows NSIS setup executable and MSI installer packaging.
-- Unified portable executable naming as `PulseRing_1.0.0_x64-portable.exe`.
-- Unit tests for config, network speed, GPU parsing and metric formatting.
-
-#### Known limitations
-
-- Windows artifacts are unsigned.
-- macOS menu bar behavior still needs real-device validation.
-- GPU support is currently strongest for NVIDIA on Windows.
+#### Changed
+- Memory >=95% triggers red tray ring (visual alert, no popup notification).
+- `pressure_level`: High reserved for memory >=95% only.
 
 ### 中文
 
-以 **脉环** 为名发布的第一个 Windows 公开版本。
+#### 新增
+- macOS GPU 完整支持：VRAM 解析 + GPU 使用率（`ioreg IOAccelerator`），之前仅获取名称。
+- Windows AMD/Intel GPU 支持：nvidia-smi 不可用时回退到 WMI。
+- macOS 浮动窗光标追踪：补齐 CoreGraphics 光标位置。
+- 托盘环图标颜色变化：蓝=正常，橙=≥85%，红=仅内存≥95%。
+- CI：Windows 便携版 + 安装包自动构建。
+- CI：macOS DMG 双架构构建 — x64（Intel 老 Mac）和 ARM64（Apple Silicon 新 Mac）。
 
-#### 包含
+#### 变更
+- 内存 ≥95% 托盘变红告警（不弹通知）。
+- `pressure_level`：High 仅留给内存 ≥95%。
 
-- Tauri 2 + Rust 实现。
-- Windows 托盘常驻监控，使用透明背景的宝蓝色环形图标。
-- 托盘悬停弹窗显示 CPU、内存、GPU、网络。
-- CPU、内存、网络上传 / 下载采样。
-- 通过 `nvidia-smi` 尝试获取 NVIDIA GPU 指标。
-- 本地配置持久化，配置损坏时自动备份并恢复默认。
-- 通过 Tauri autostart 插件实现真实开机自启动。
-- 通过 Tauri single-instance 插件实现单实例。
-- 可选悬浮窗，悬浮窗只保留悬停出现的 pin 固定按钮。
-- 悬浮窗设置集中在正式设置页：开启、透明度、置顶、锁定位置、点击穿透、恢复默认位置。
-- 设置通过同一份持久化配置和 `config-updated` 事件同步。
-- 支持日志目录。
-- 支持 Windows NSIS exe 安装器和 MSI 安装包打包。
-- 统一免安装可执行文件命名为 `PulseRing_1.0.0_x64-portable.exe`。
-- 覆盖配置、网络速度、GPU 解析、指标格式化等单元测试。
-
-#### 已知限制
-
-- Windows 产物尚未签名。
-- macOS 菜单栏行为仍需真机验证。
-- GPU 支持目前主要覆盖 Windows NVIDIA。
+## [1.0.0] - 2026-05-26
