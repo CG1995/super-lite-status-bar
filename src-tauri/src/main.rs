@@ -262,12 +262,11 @@ fn main() {
             tracing::info!(app = APP_NAME, "application started");
             Ok(())
         })
-        .on_window_event(|window, event| match event {
-            WindowEvent::CloseRequested { api, .. } => {
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
                 api.prevent_close();
                 let _ = window.hide();
             }
-            _ => {}
         })
         .run(tauri::generate_context!())
         .expect("error while running PulseRing");

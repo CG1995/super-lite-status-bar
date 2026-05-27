@@ -1,4 +1,4 @@
-use crate::core::identity::{APP_NAME, APP_ORGANIZATION, APP_QUALIFIER, APP_SLUG};
+use crate::core::identity::{APP_NAME, APP_ORGANIZATION, APP_QUALIFIER};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -89,47 +89,32 @@ impl ConfigStore {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum FontPreset {
+    #[default]
     Small,
     Medium,
     Large,
     Custom,
 }
 
-impl Default for FontPreset {
-    fn default() -> Self {
-        Self::Small
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum ThemeMode {
+    #[default]
     System,
     Dark,
     Light,
 }
 
-impl Default for ThemeMode {
-    fn default() -> Self {
-        Self::System
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum SpeedUnit {
+    #[default]
     Auto,
     Kb,
     Mb,
-}
-
-impl Default for SpeedUnit {
-    fn default() -> Self {
-        Self::Auto
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -229,6 +214,7 @@ impl AppConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::identity::APP_SLUG;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn temp_config_path(name: &str) -> PathBuf {
@@ -243,11 +229,16 @@ mod tests {
     fn saves_and_loads_config() {
         let path = temp_config_path(APP_SLUG);
         let store = ConfigStore::new(&path);
-        let mut config = AppConfig::default();
-        config.refresh_interval_ms = 5_000;
-        config.font.preset = FontPreset::Large;
-        config.speed_unit = SpeedUnit::Mb;
-        config.show_na = false;
+        let config = AppConfig {
+            refresh_interval_ms: 5_000,
+            font: FontConfig {
+                preset: FontPreset::Large,
+                ..FontConfig::default()
+            },
+            speed_unit: SpeedUnit::Mb,
+            show_na: false,
+            ..AppConfig::default()
+        };
 
         store.save(&config).unwrap();
         let loaded = ConfigStore::load_from_path(&path).unwrap();
@@ -261,10 +252,18 @@ mod tests {
 
     #[test]
     fn sanitizes_unsafe_values() {
-        let mut config = AppConfig::default();
-        config.refresh_interval_ms = 50;
-        config.font.custom_px = 4;
-        config.floating_bar.opacity = 4.0;
+        let config = AppConfig {
+            refresh_interval_ms: 50,
+            font: FontConfig {
+                custom_px: 4,
+                ..FontConfig::default()
+            },
+            floating_bar: FloatingBarConfig {
+                opacity: 4.0,
+                ..FloatingBarConfig::default()
+            },
+            ..AppConfig::default()
+        };
 
         let config = config.sanitized();
 
