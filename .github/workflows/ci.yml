@@ -80,44 +80,38 @@ jobs:
           path: src-tauri/target/release/bundle/nsis/PulseRing_*_x64-setup.exe
           retention-days: 7
 
-  # ── macOS x64 Build (Intel Mac, macos-13 runner) ───────────────────────
+  # ── macOS Build (ARM64 native + x86_64 cross-compile) ──────────────────
 
-  build-macos-x64:
-    name: Build macOS x64 (Intel)
-    runs-on: macos-13
-    needs: rust-tests-macos
-    steps:
-      - uses: actions/checkout@v4
-      - run: rustup default stable
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version "^2"
-      - name: Build DMG (x64)
-        run: cargo tauri build --bundles dmg --no-sign --ci
-        working-directory: src-tauri
-      - name: Upload DMG (x64)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PulseRing-macOS-x64-DMG
-          path: src-tauri/target/release/bundle/dmg/PulseRing_*_x64.dmg
-          retention-days: 7
-
-  # ── macOS ARM64 Build (Apple Silicon, macos-latest runner) ─────────────
-
-  build-macos-arm64:
-    name: Build macOS ARM64 (Apple Silicon)
+  build-macos:
+    name: Build macOS (ARM64 + x86_64)
     runs-on: macos-latest
     needs: rust-tests-macos
     steps:
       - uses: actions/checkout@v4
       - run: rustup default stable
+
+      # --- ARM64 (native) ---
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"
-      - name: Build DMG (ARM64)
+      - name: Build ARM64 DMG
         run: cargo tauri build --bundles dmg --no-sign --ci
         working-directory: src-tauri
-      - name: Upload DMG (ARM64)
+      - name: Upload ARM64 DMG
         uses: actions/upload-artifact@v4
         with:
           name: PulseRing-macOS-ARM64-DMG
           path: src-tauri/target/release/bundle/dmg/PulseRing_*_aarch64.dmg
+          retention-days: 7
+
+      # --- x86_64 (cross-compile via Rosetta 2) ---
+      - name: Add x86_64 target
+        run: rustup target add x86_64-apple-darwin
+      - name: Build x86_64 DMG
+        run: cargo tauri build --bundles dmg --target x86_64-apple-darwin --no-sign --ci
+        working-directory: src-tauri
+      - name: Upload x86_64 DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: PulseRing-macOS-x64-DMG
+          path: src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/PulseRing_*_x64.dmg
           retention-days: 7
