@@ -1,5 +1,5 @@
-use directories::ProjectDirs;
 use crate::core::identity::{APP_NAME, APP_ORGANIZATION, APP_QUALIFIER};
+use directories::ProjectDirs;
 use std::{path::PathBuf, sync::OnceLock};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, EnvFilter};

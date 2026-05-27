@@ -4,6 +4,13 @@
   <img src="./src-tauri/icons/128x128.png" alt="脉环应用图标" width="160">
 </p>
 
+<p align="center">
+  <a href="https://github.com/CG1995/super-lite-status-bar/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/CG1995/super-lite-status-bar/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/CG1995/super-lite-status-bar/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/CG1995/super-lite-status-bar?display_name=tag"></a>
+  <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24c8db">
+  <img alt="Platforms" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-555">
+</p>
+
 脉环是一个基于 Tauri 2 的轻量桌面状态工具，面向 Windows 10/11 和 macOS。它常驻托盘或菜单栏，用一个安静的小入口显示 CPU、内存、显卡和网络状态，不打扰，也不抢屏幕。
 
 English name: PulseRing  
@@ -139,6 +146,12 @@ src-tauri/target/release/bundle/dmg/PulseRing_1.0.0_aarch64.dmg
 ## 当前状态
 
 详见 [docs/DEVELOPMENT_PROGRESS.md](./docs/DEVELOPMENT_PROGRESS.md) 和 [CHANGELOG.md](./CHANGELOG.md)。
+
+## 参与贡献
+
+欢迎提交聚焦的问题和 PR。开始前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)、[SUPPORT.md](./SUPPORT.md) 和 [docs/MAINTAINING.md](./docs/MAINTAINING.md)。
+
+安全相关问题请按 [SECURITY.md](./SECURITY.md) 处理。
 
 ## License
 

@@ -4,6 +4,13 @@
   <img src="./src-tauri/icons/128x128.png" alt="PulseRing app icon" width="160">
 </p>
 
+<p align="center">
+  <a href="https://github.com/CG1995/super-lite-status-bar/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/CG1995/super-lite-status-bar/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/CG1995/super-lite-status-bar/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/CG1995/super-lite-status-bar?display_name=tag"></a>
+  <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24c8db">
+  <img alt="Platforms" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-555">
+</p>
+
 PulseRing is a quiet Tauri 2 desktop utility for Windows 10/11 and macOS. It lives in the system tray or menu bar and gives you a quick read on CPU, memory, GPU and network activity without opening a full monitoring dashboard.
 
 中文名：脉环  
@@ -157,6 +164,12 @@ Release details live in [docs/RELEASE.md](./docs/RELEASE.md).
 ## Current Status
 
 See [docs/DEVELOPMENT_PROGRESS.md](./docs/DEVELOPMENT_PROGRESS.md) and [CHANGELOG.md](./CHANGELOG.md).
+
+## Contributing
+
+Focused issues and pull requests are welcome. Start with [CONTRIBUTING.md](./CONTRIBUTING.md), [SUPPORT.md](./SUPPORT.md), and [docs/MAINTAINING.md](./docs/MAINTAINING.md).
+
+Security-sensitive reports should follow [SECURITY.md](./SECURITY.md).
 
 ## License
 

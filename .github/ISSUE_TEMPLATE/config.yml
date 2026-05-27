@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support
+    url: https://github.com/CG1995/super-lite-status-bar/blob/main/SUPPORT.md
+    about: Read support guidance before opening an issue.
