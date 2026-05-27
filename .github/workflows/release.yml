@@ -29,7 +29,17 @@ jobs:
               src-tauri/target/release/PulseRing_*_x64-portable.exe
           - os: macos-14
             name: macOS
-            build_command: cargo tauri build --bundles dmg --no-sign --ci
+            build_command: |
+              cargo tauri build --bundles app --no-sign --ci
+              codesign --force --deep --sign - target/release/bundle/macos/PulseRing.app
+              rm -rf target/release/dmg-root
+              mkdir -p target/release/dmg-root target/release/bundle/dmg
+              cp -R target/release/bundle/macos/PulseRing.app target/release/dmg-root/
+              ln -s /Applications target/release/dmg-root/Applications
+              version=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" target/release/bundle/macos/PulseRing.app/Contents/Info.plist)
+              arch=$(uname -m)
+              if [ "$arch" = "arm64" ]; then arch="aarch64"; fi
+              hdiutil create -volname PulseRing -srcfolder target/release/dmg-root -ov -format UDZO "target/release/bundle/dmg/PulseRing_${version}_${arch}.dmg"
             artifact_paths: src-tauri/target/release/bundle/dmg/PulseRing_*.dmg
     runs-on: ${{ matrix.os }}
     steps:
@@ -57,6 +67,7 @@ jobs:
       - name: Verify macOS DMG
         if: runner.os == 'macOS'
         run: |
+          codesign --verify --deep --strict --verbose=4 src-tauri/target/release/bundle/macos/PulseRing.app
           dmg_path=$(ls src-tauri/target/release/bundle/dmg/*.dmg | head -n 1)
           file "$dmg_path"
           hdiutil imageinfo "$dmg_path"
