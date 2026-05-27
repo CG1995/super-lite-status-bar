@@ -350,7 +350,12 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
 }
 
 fn status_icon(level: PressureLevel) -> Image<'static> {
-    let _ = level;
+    let (r, g, b) = match level {
+        PressureLevel::High => (0xff, 0x30, 0x30),
+        PressureLevel::Medium => (0xff, 0xb4, 0x17),
+        PressureLevel::Normal => (0x17, 0x69, 0xff),
+    };
+
     let size = 32_u32;
     let mut rgba = vec![0_u8; (size * size * 4) as usize];
 
@@ -360,9 +365,9 @@ fn status_icon(level: PressureLevel) -> Image<'static> {
             let px = x as f32 + 0.5;
             let py = y as f32 + 0.5;
             if ring_contains(px, py) {
-                rgba[offset] = 0x17;
-                rgba[offset + 1] = 0x69;
-                rgba[offset + 2] = 0xff;
+                rgba[offset] = r;
+                rgba[offset + 1] = g;
+                rgba[offset + 2] = b;
                 rgba[offset + 3] = 255;
             }
         }
