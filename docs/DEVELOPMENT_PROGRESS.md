@@ -104,10 +104,16 @@ Observed release process memory during local runs was roughly 35-46 MB working s
 ### Good Next Tasks
 
 - Add a Windows UI automation smoke test for tray tooltip behavior if practical.
-- Add GitHub Actions coverage for `cargo test` on Windows and macOS.
 - Add binary signing plan for Windows and macOS.
 - Add crash-safe config migration if config schema changes.
 - Consider AMD / Intel GPU support only if it remains lightweight.
+
+### Release Model
+
+- The repository now uses a single tag-driven GitHub Actions release workflow for both Windows and macOS.
+- Before tagging a release, bump the version in `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json`.
+- Keep README download names aligned with the current tagged version.
+- Do not upload renamed archives as release assets. Only publish the artifacts produced by Tauri.
 
 ## Security Notes
 

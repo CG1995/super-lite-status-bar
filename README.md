@@ -25,6 +25,8 @@ macOS builds are published on the same Releases page.
 The current Windows artifacts are unsigned, so Windows may show a SmartScreen warning on first launch.
 The current macOS artifacts are unsigned, so macOS may still prompt the first time you open the app.
 
+Releases are tag-driven. The GitHub Actions release workflow builds Windows and macOS bundles from the same tag and uploads the generated assets directly.
+
 ## Preview
 
 <p align="center">
@@ -134,6 +136,16 @@ cargo tauri build --bundles dmg --no-sign --ci
 ```text
 src-tauri/target/release/bundle/dmg/PulseRing_1.0.0_aarch64.dmg
 ```
+
+## Release
+
+This repository uses a tag-based release flow.
+
+- CI runs `cargo fmt --check`, `cargo clippy --locked --all-targets --all-features -- -D warnings`, and `cargo test --locked` on both Windows and macOS.
+- The release workflow publishes Windows installers and the macOS DMG from a single tag push such as `v1.0.0`.
+- Before cutting a release, bump the version in `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json`, then update the asset names in this README if needed.
+
+Release details live in [docs/RELEASE.md](./docs/RELEASE.md).
 
 ## Security And Privacy
 

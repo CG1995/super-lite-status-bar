@@ -25,6 +25,8 @@ macOS 构建产物也发布在同一个 Releases 页面。
 当前 Windows 产物尚未做代码签名，首次运行时 Windows 可能会出现 SmartScreen 提示。
 当前 macOS 产物尚未做代码签名，首次打开时 macOS 可能仍会提示。
 
+发布是按 tag 驱动的。GitHub Actions 的发布工作流会从同一个 tag 同时生成 Windows 和 macOS 产物，并直接上传生成好的安装包。
+
 ## 预览
 
 <p align="center">
@@ -116,6 +118,16 @@ cargo tauri build --bundles dmg --no-sign --ci
 ```text
 src-tauri/target/release/bundle/dmg/PulseRing_1.0.0_aarch64.dmg
 ```
+
+## 发布
+
+本仓库使用 tag 驱动的发布流程。
+
+- CI 会在 Windows 和 macOS 上运行 `cargo fmt --check`、`cargo clippy --locked --all-targets --all-features -- -D warnings` 和 `cargo test --locked`。
+- 发布工作流会在同一个 tag 下自动产出 Windows 安装包和 macOS DMG，例如 `v1.0.0`。
+- 正式发布前，需要先更新 `src-tauri/Cargo.toml` 和 `src-tauri/tauri.conf.json` 的版本号；如果版本号变更，README 里的产物文件名也要一起更新。
+
+发布细节见 [docs/RELEASE.md](./docs/RELEASE.md)。
 
 ## 安全与隐私
 
