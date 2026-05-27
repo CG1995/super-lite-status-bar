@@ -37,7 +37,7 @@ jobs:
 
   rust-tests-macos:
     name: Rust tests (macOS)
-    runs-on: macos-13
+    runs-on: macos-latest
     defaults:
       run:
         working-directory: src-tauri
