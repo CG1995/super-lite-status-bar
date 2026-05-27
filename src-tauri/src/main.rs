@@ -289,6 +289,7 @@ fn spawn_metrics_loop(app: &AppHandle, state: &AppState) {
                     .unwrap_or_default();
                 let snapshot = sampler.sample(&current_config);
 
+
                 if let Ok(mut latest) = latest_metrics.write() {
                     *latest = Some(snapshot.clone());
                 }

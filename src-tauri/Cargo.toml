@@ -1,6 +1,6 @@
 [package]
 name = "pulsering"
-version = "1.0.0"
+version = "1.0.1"
 description = "A quiet system status tray and menu bar monitor."
 authors = ["CG1995"]
 edition = "2021"
@@ -31,3 +31,5 @@ lto = true
 opt-level = "z"
 panic = "abort"
 strip = true
+
+

@@ -130,12 +130,13 @@ fn memory_info(system: &System) -> MemoryInfo {
 }
 
 fn pressure_level(cpu: f32, memory: f32, gpu: Option<f32>) -> PressureLevel {
-    let gpu = gpu.unwrap_or(0.0);
-    let max = cpu.max(memory).max(gpu);
-    if max >= 85.0 {
+    let _gpu = gpu.unwrap_or(0.0);
+    if memory >= 95.0 {
         PressureLevel::High
-    } else if max >= 65.0 {
+    } else if cpu.max(memory).max(_gpu) >= 85.0 {
         PressureLevel::Medium
+    } else if cpu.max(memory).max(_gpu) >= 65.0 {
+        PressureLevel::Normal
     } else {
         PressureLevel::Normal
     }

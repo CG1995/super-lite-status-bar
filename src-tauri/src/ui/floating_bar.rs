@@ -128,7 +128,35 @@ fn cursor_position() -> Option<(i32, i32)> {
     (ok != 0).then_some((point.x, point.y))
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_os = "macos")]
+#[link(name = "CoreGraphics", kind = "framework")]
+extern "C" {
+    fn CGEventCreate(source: *const std::ffi::c_void) -> *const std::ffi::c_void;
+    fn CGEventGetLocation(event: *const std::ffi::c_void) -> CGPoint;
+    fn CFRelease(cf: *const std::ffi::c_void);
+}
+
+#[cfg(target_os = "macos")]
+#[repr(C)]
+struct CGPoint {
+    x: f64,
+    y: f64,
+}
+
+#[cfg(target_os = "macos")]
+fn cursor_position() -> Option<(i32, i32)> {
+    unsafe {
+        let event = CGEventCreate(std::ptr::null());
+        if event.is_null() {
+            return None;
+        }
+        let point = CGEventGetLocation(event);
+        CFRelease(event);
+        Some((point.x as i32, point.y as i32))
+    }
+}
+
+#[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
 fn cursor_position() -> Option<(i32, i32)> {
     None
 }
