@@ -49,7 +49,7 @@ jobs:
   # ── Windows Build ──────────────────────────────────────────────────────
 
   build-windows:
-    name: Build Windows
+    name: Build Windows x64
     runs-on: windows-latest
     needs: rust-tests-windows
     steps:
@@ -65,7 +65,7 @@ jobs:
       - name: Upload portable exe
         uses: actions/upload-artifact@v4
         with:
-          name: PulseRing-Windows-portable
+          name: PulseRing-Windows-x64-portable
           path: src-tauri/target/release/PulseRing_1.0.1_x64-portable.exe
           retention-days: 7
       - name: Install Tauri CLI
@@ -76,14 +76,14 @@ jobs:
       - name: Upload NSIS installer
         uses: actions/upload-artifact@v4
         with:
-          name: PulseRing-Windows-NSIS-installer
+          name: PulseRing-Windows-x64-NSIS-installer
           path: src-tauri/target/release/bundle/nsis/PulseRing_*_x64-setup.exe
           retention-days: 7
 
-  # ── macOS Build ────────────────────────────────────────────────────────
+  # ── macOS x64 Build (Intel Mac, macos-13 runner) ───────────────────────
 
-  build-macos:
-    name: Build macOS
+  build-macos-x64:
+    name: Build macOS x64 (Intel)
     runs-on: macos-13
     needs: rust-tests-macos
     steps:
@@ -91,12 +91,33 @@ jobs:
       - run: rustup default stable
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"
-      - name: Build DMG
+      - name: Build DMG (x64)
         run: cargo tauri build --bundles dmg --no-sign --ci
         working-directory: src-tauri
-      - name: Upload DMG
+      - name: Upload DMG (x64)
         uses: actions/upload-artifact@v4
         with:
-          name: PulseRing-macOS-DMG
-          path: src-tauri/target/release/bundle/dmg/PulseRing_*.dmg
+          name: PulseRing-macOS-x64-DMG
+          path: src-tauri/target/release/bundle/dmg/PulseRing_*_x64.dmg
+          retention-days: 7
+
+  # ── macOS ARM64 Build (Apple Silicon, macos-latest runner) ─────────────
+
+  build-macos-arm64:
+    name: Build macOS ARM64 (Apple Silicon)
+    runs-on: macos-latest
+    needs: rust-tests-macos
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup default stable
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2"
+      - name: Build DMG (ARM64)
+        run: cargo tauri build --bundles dmg --no-sign --ci
+        working-directory: src-tauri
+      - name: Upload DMG (ARM64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PulseRing-macOS-ARM64-DMG
+          path: src-tauri/target/release/bundle/dmg/PulseRing_*_aarch64.dmg
           retention-days: 7
