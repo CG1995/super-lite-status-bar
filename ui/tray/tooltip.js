@@ -25,10 +25,10 @@ export function renderTooltip(root, api, config, initialMetrics) {
 
 function tooltipLines(snapshot, config) {
   return [
-    line("CPU", percent(snapshot.cpu_percent)),
-    line("MEM", `${bytes(snapshot.memory.used_bytes)} / ${bytes(snapshot.memory.total_bytes)} (${percent(snapshot.memory.percent)})`),
-    line("GPU", gpuText(snapshot, config)),
-    line("NET", `↓ ${shortSpeed(snapshot.network.download_bps, "auto")}  ↑ ${shortSpeed(snapshot.network.upload_bps, "auto")}`)
+    line("CPU", percent(snapshot.cpu_percent), "processor"),
+    line("MEM", `${bytes(snapshot.memory.used_bytes)} / ${bytes(snapshot.memory.total_bytes)} (${percent(snapshot.memory.percent)})`, "memory"),
+    line("GPU", gpuText(snapshot, config), "graphics"),
+    line("NET", `↓ ${shortSpeed(snapshot.network.download_bps, "auto")}  ↑ ${shortSpeed(snapshot.network.upload_bps, "auto")}`, "network")
   ];
 }
 
@@ -57,8 +57,13 @@ function shortGpuName(name) {
   return modelPart || cleaned;
 }
 
-function line(label, value) {
-  return `<div class="tooltip-line"><span>${label}</span><strong>${escapeHtml(value)}</strong></div>`;
+function line(label, value, key) {
+  return `
+    <div class="tooltip-line metric-${key}">
+      <span>${label}</span>
+      <strong>${escapeHtml(value)}</strong>
+    </div>
+  `;
 }
 
 function escapeHtml(value) {

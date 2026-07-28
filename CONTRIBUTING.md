@@ -37,6 +37,7 @@ cargo test --locked
 - Keep Windows tray behavior compact and platform-native.
 - Do not put long status text directly in the Windows tray.
 - Keep GPU collection best-effort and non-fatal.
+- Keep UI changes aligned with [docs/UI_GUIDELINES.md](./docs/UI_GUIDELINES.md).
 - Avoid adding heavyweight frontend frameworks unless there is a clear maintenance win.
 - Prefer small, focused pull requests over broad rewrites.
 

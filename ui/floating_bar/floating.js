@@ -73,16 +73,16 @@ async function updateFloatingConfig(api, config, patch) {
 
 function floatingContent(snapshot) {
   return `
-    ${item("CPU", `${Math.round(snapshot.cpu_percent)}%`)}
-    ${item("MEM", `${Math.round(snapshot.memory.percent)}%`)}
-    ${item("GPU", gpuValue(snapshot))}
-    ${item("↓", shortSpeed(snapshot.network.download_bps, "auto"))}
-    ${item("↑", shortSpeed(snapshot.network.upload_bps, "auto"))}
+    ${item("CPU", `${Math.round(snapshot.cpu_percent)}%`, "processor")}
+    ${item("MEM", `${Math.round(snapshot.memory.percent)}%`, "memory")}
+    ${item("GPU", gpuValue(snapshot), "graphics")}
+    ${item("↓", shortSpeed(snapshot.network.download_bps, "auto"), "download")}
+    ${item("↑", shortSpeed(snapshot.network.upload_bps, "auto"), "upload")}
   `;
 }
 
-function item(label, value) {
-  return `<span><b>${label}</b> ${value}</span>`;
+function item(label, value, key) {
+  return `<span class="metric-pill metric-${key}"><b>${label}</b><strong>${value}</strong></span>`;
 }
 
 function gpuValue(snapshot) {
