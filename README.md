@@ -74,7 +74,7 @@ GPU metrics are capability-based. The app degrades gracefully when GPU data is u
 - Rust backend
 - Minimal no-framework frontend: HTML, CSS, JavaScript
 - `sysinfo` for CPU, memory and network counters
-- In-process NVML dynamic FFI capability path for NVIDIA GPU metrics on Windows
+- In-process NVML dynamic FFI for discrete NVIDIA GPUs with automatic fallback to DXGI + PDH for integrated graphics (Intel Arc, AMD, Intel UHD) on Windows
 - Tauri autostart plugin
 - Tauri single-instance plugin
 

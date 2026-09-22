@@ -1,5 +1,23 @@
 # Changelog / 变更记录
 
+## [1.0.3] - 2026-09-22
+
+### English
+
+#### Added
+- Added support for integrated graphics (iGPU) telemetry on Windows (Intel Arc, Intel UHD/Iris, AMD Radeon) via native in-process DXGI (`dxgi.dll`) and Windows Performance Data Helper (`pdh.dll`).
+- Integrated graphics displays memory usage percentage (e.g. `GPU 27%`) and detailed dedicated/shared video memory usage in tooltip without requiring external tools.
+- Dual-tier GPU fallback architecture: seamlessly prioritizes discrete NVIDIA GPU when connected (via in-process NVML), and gracefully falls back to the integrated GPU when the NVIDIA GPU or eGPU is disconnected.
+- Cleaned up GPU name display in tray tooltip by removing trademark noise `(R)`, `(TM)` and highlighting model names nicely (e.g. `Arc B390`).
+
+### 中文
+
+#### 新增
+- Windows 下新增核心显卡/集成显卡（Intel Arc、Intel UHD/Iris、AMD Radeon 等核显）显存与使用率监控，通过进程内 DXGI (`dxgi.dll`) 与 Windows 原生性能计数器 (`pdh.dll`) 微秒级获取已用显存与总可用内存。
+- 悬浮条与托盘在核显环境下正常显示显存占用率（如 `GPU 27%`）与显存容量（如 `4.9G / 18.0G`），不再显示 `N/A`。
+- 实现双层显卡自适应回退架构：当插入外置 NVIDIA 独显（如 OCuLink eGPU）时，NVML 优先接管并展示独显核心利用率、专用显存与温度；断开外置显卡时自动平滑回退到核显，实现零闪退、零子进程与零弹窗。
+- 优化托盘显卡名称净化逻辑，去除 `(R)`、`(TM)` 商标符号，优雅展示如 `Arc B390`、`RTX 3060 Ti`。
+
 ## [1.0.2] - 2026-09-22
 
 ### English

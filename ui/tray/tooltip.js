@@ -48,12 +48,17 @@ function vramText(gpu) {
 function shortGpuName(name) {
   if (!name) return "";
   const cleaned = name
+    .replace(/\((?:R|TM)\)/gi, "")
     .replace(/NVIDIA/gi, "")
     .replace(/GeForce/gi, "")
     .replace(/Laptop GPU/gi, "")
     .replace(/\bGPU\b/gi, "")
+    .replace(/\s+/g, " ")
     .trim();
   const modelPart = cleaned.split(/\s+/).find((part) => /\d/.test(part) && part.length >= 3);
+  if (modelPart && cleaned.toLowerCase().includes("arc")) {
+    return `Arc ${modelPart}`;
+  }
   return modelPart || cleaned;
 }
 

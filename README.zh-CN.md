@@ -74,7 +74,7 @@ GPU 采用能力检测。当前平台或硬件无法获取 GPU 数据时，应�
 - Rust 后端
 - 极简无框架前端：HTML、CSS、JavaScript
 - `sysinfo` 采集 CPU、内存、网络计数器
-- Windows 上通过进程内动态 NVML（`nvml.dll`）采集 NVIDIA GPU 指标
+- Windows 上通过进程内动态 NVML（`nvml.dll`）采集 NVIDIA 独显指标，无 NVIDIA 显卡时自动回退为 DXGI + PDH 采集核显（Intel Arc / AMD 等）显存与占用率
 - Tauri autostart 插件
 - Tauri single-instance 插件
 
