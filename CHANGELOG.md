@@ -1,20 +1,26 @@
 # Changelog / 变更记录
 
-## [Unreleased]
+## [1.0.2] - 2026-09-22
 
 ### English
 
-- macOS releases are now built by a real Tauri DMG workflow and upload the generated `.dmg` directly instead of a renamed archive.
-- CI now runs formatting, linting and tests on both Windows and macOS.
-- Releases are now driven by a single tag-based GitHub Actions workflow that publishes Windows and macOS assets together.
-- Added contribution, support, security, maintenance, issue template and pull request template guidance.
+#### Fixed
+- Fixed high CPU usage and process churn caused by continuous 1-second `nvidia-smi` CLI polling. NVIDIA GPU telemetry is now queried directly in-process via dynamic NVML (`nvml.dll`) FFI.
+- Fixed Windows shutdown error modal popup (`nvidia-smi.exe - Application Error 0xc0000142`). Child process creation during session teardown is completely eliminated.
+- Configured Windows error mode (`SetErrorMode`) to prevent any modal crash popups during logoff or system shutdown.
+- Added console/system shutdown event handler (`SetConsoleCtrlHandler`) to immediately pause background telemetry upon shutdown signal.
+- Added graceful 30-second backoff when NVIDIA GPU or external eGPU is disconnected or unavailable.
+- macOS DMG packaging and unified dual-platform release workflow improvements.
 
 ### 中文
 
-- macOS 发布现在通过真实的 Tauri DMG 工作流生成，并直接上传生成的 `.dmg`，不再是改后缀的归档文件。
-- CI 现在会在 Windows 和 macOS 上同时运行格式检查、静态检查和测试。
-- 发布现在由统一的 tag 驱动 GitHub Actions 工作流处理，Windows 和 macOS 产物会一起发布。
-- 新增贡献、安全、支持、维护、issue 模板和 PR 模板。
+#### 修复
+- 彻底解决每秒盲轮询 `nvidia-smi.exe` 导致的系统高频创建进程与 CPU/电量损耗。Windows 下重构为进程内动态加载 NVML（`nvml.dll` 原生 FFI）直接获取指标，进程创建次数彻底归零。
+- 彻底根治 Windows 关机或重启时报 `nvidia-smi.exe - 应用程序无法正常启动 (0xc0000142)` 系统模态弹窗卡死关机的问题。
+- Windows 启动时配置 `SetErrorMode` 关键错误静默模式，防止系统注销/关机时抛出模态错误框。
+- 注册 `SetConsoleCtrlHandler` 关机/注销信号监听，收到关机事件瞬间立即中断后台指标轮询。
+- 增加显卡脱机或无 NVIDIA GPU（如外置 OCuLink eGPU 断开或纯核显设备）时的 30 秒优雅退避机制，热插拔自动恢复。
+- 完善 macOS DMG 打包与 Windows/macOS 统一 tag 自动化发版流。
 
 ## [1.0.0] - 2026-05-26
 

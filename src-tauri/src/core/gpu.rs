@@ -1,8 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    process::Command,
-    time::{Duration, Instant},
-};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct GpuInfo {
@@ -17,8 +13,10 @@ pub struct GpuInfo {
 
 #[derive(Debug)]
 pub struct GpuSampler {
+    #[cfg(target_os = "windows")]
+    nvml_sampler: nvml::NvmlSampler,
+    #[cfg(target_os = "macos")]
     cached_name: Option<String>,
-    last_attempt: Option<Instant>,
 }
 
 impl Default for GpuSampler {
@@ -30,23 +28,17 @@ impl Default for GpuSampler {
 impl GpuSampler {
     pub fn new() -> Self {
         Self {
+            #[cfg(target_os = "windows")]
+            nvml_sampler: nvml::NvmlSampler::new(),
+            #[cfg(target_os = "macos")]
             cached_name: None,
-            last_attempt: None,
         }
     }
 
     pub fn sample(&mut self) -> GpuInfo {
-        if let Some(last_attempt) = self.last_attempt {
-            if last_attempt.elapsed() < Duration::from_secs(5) && self.cached_name.is_none() {
-                return GpuInfo::default();
-            }
-        }
-        self.last_attempt = Some(Instant::now());
-
         #[cfg(target_os = "windows")]
         {
-            if let Some(info) = sample_nvidia_smi() {
-                self.cached_name = info.name.clone();
+            if let Some(info) = self.nvml_sampler.sample() {
                 return info;
             }
         }
@@ -71,26 +63,239 @@ impl GpuSampler {
 }
 
 #[cfg(target_os = "windows")]
-fn sample_nvidia_smi() -> Option<GpuInfo> {
-    let mut command = Command::new("nvidia-smi");
-    command.args([
-        "--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu",
-        "--format=csv,noheader,nounits",
-    ]);
-    set_hidden_window(&mut command);
+mod nvml {
+    use std::ffi::{c_char, c_void, CStr};
+    use std::time::{Duration, Instant};
 
-    let output = command.output().ok()?;
-    if !output.status.success() {
-        return None;
+    type NvmlReturn = i32;
+    const NVML_SUCCESS: NvmlReturn = 0;
+    const NVML_TEMPERATURE_GPU: u32 = 0;
+
+    type NvmlDevice = *mut c_void;
+
+    #[repr(C)]
+    #[derive(Debug, Copy, Clone, Default)]
+    pub struct NvmlUtilization {
+        pub gpu: u32,
+        pub memory: u32,
     }
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let first = stdout.lines().find(|line| !line.trim().is_empty())?;
-    parse_nvidia_smi_line(first)
+    #[repr(C)]
+    #[derive(Debug, Copy, Clone, Default)]
+    pub struct NvmlMemory {
+        pub total: u64,
+        pub free: u64,
+        pub used: u64,
+    }
+
+    type NvmlInitFn = unsafe extern "C" fn() -> NvmlReturn;
+    type NvmlShutdownFn = unsafe extern "C" fn() -> NvmlReturn;
+    type NvmlDeviceGetCountFn = unsafe extern "C" fn(*mut u32) -> NvmlReturn;
+    type NvmlDeviceGetHandleByIndexFn = unsafe extern "C" fn(u32, *mut NvmlDevice) -> NvmlReturn;
+    type NvmlDeviceGetNameFn = unsafe extern "C" fn(NvmlDevice, *mut c_char, u32) -> NvmlReturn;
+    type NvmlDeviceGetUtilizationRatesFn =
+        unsafe extern "C" fn(NvmlDevice, *mut NvmlUtilization) -> NvmlReturn;
+    type NvmlDeviceGetMemoryInfoFn =
+        unsafe extern "C" fn(NvmlDevice, *mut NvmlMemory) -> NvmlReturn;
+    type NvmlDeviceGetTemperatureFn = unsafe extern "C" fn(NvmlDevice, u32, *mut u32) -> NvmlReturn;
+
+    extern "system" {
+        fn LoadLibraryA(lp_lib_file_name: *const u8) -> *mut c_void;
+        fn GetProcAddress(h_module: *mut c_void, lp_proc_name: *const u8) -> *mut c_void;
+        fn FreeLibrary(h_lib_module: *mut c_void) -> i32;
+    }
+
+    struct NvmlLoaded {
+        module: *mut c_void,
+        device: NvmlDevice,
+        name: String,
+        fn_shutdown: NvmlShutdownFn,
+        fn_get_util: NvmlDeviceGetUtilizationRatesFn,
+        fn_get_mem: NvmlDeviceGetMemoryInfoFn,
+        fn_get_temp: NvmlDeviceGetTemperatureFn,
+    }
+
+    unsafe impl Send for NvmlLoaded {}
+
+    impl Drop for NvmlLoaded {
+        fn drop(&mut self) {
+            unsafe {
+                (self.fn_shutdown)();
+                FreeLibrary(self.module);
+            }
+        }
+    }
+
+    pub struct NvmlSampler {
+        loaded: Option<NvmlLoaded>,
+        last_attempt: Option<Instant>,
+    }
+
+    unsafe impl Send for NvmlSampler {}
+
+    impl std::fmt::Debug for NvmlSampler {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.debug_struct("NvmlSampler")
+                .field("is_loaded", &self.loaded.is_some())
+                .field("last_attempt", &self.last_attempt)
+                .finish()
+        }
+    }
+
+    const RETRY_BACKOFF: Duration = Duration::from_secs(30);
+
+    unsafe fn get_proc<T>(module: *mut c_void, name: &[u8]) -> Option<T> {
+        let proc = GetProcAddress(module, name.as_ptr());
+        if proc.is_null() {
+            None
+        } else {
+            Some(std::mem::transmute_copy(&proc))
+        }
+    }
+
+    impl NvmlSampler {
+        pub fn new() -> Self {
+            Self {
+                loaded: None,
+                last_attempt: None,
+            }
+        }
+
+        pub fn sample(&mut self) -> Option<super::GpuInfo> {
+            if self.loaded.is_none() {
+                if let Some(last) = self.last_attempt {
+                    if last.elapsed() < RETRY_BACKOFF {
+                        return None;
+                    }
+                }
+                self.last_attempt = Some(Instant::now());
+                self.loaded = Self::try_init();
+            }
+
+            let loaded = self.loaded.as_mut()?;
+            unsafe {
+                let mut util = NvmlUtilization::default();
+                let mut mem = NvmlMemory::default();
+                let mut temp: u32 = 0;
+
+                let util_res = (loaded.fn_get_util)(loaded.device, &mut util);
+                let mem_res = (loaded.fn_get_mem)(loaded.device, &mut mem);
+                let temp_res = (loaded.fn_get_temp)(loaded.device, NVML_TEMPERATURE_GPU, &mut temp);
+
+                // If calls fail (e.g. eGPU disconnected or device lost), drop loaded instance and back off
+                if util_res != NVML_SUCCESS && mem_res != NVML_SUCCESS && temp_res != NVML_SUCCESS {
+                    self.loaded = None;
+                    self.last_attempt = Some(Instant::now());
+                    return None;
+                }
+
+                Some(super::GpuInfo {
+                    name: Some(loaded.name.clone()),
+                    usage_percent: if util_res == NVML_SUCCESS {
+                        Some(util.gpu as f32)
+                    } else {
+                        None
+                    },
+                    memory_used_bytes: if mem_res == NVML_SUCCESS {
+                        Some(mem.used)
+                    } else {
+                        None
+                    },
+                    memory_total_bytes: if mem_res == NVML_SUCCESS {
+                        Some(mem.total)
+                    } else {
+                        None
+                    },
+                    temperature_celsius: if temp_res == NVML_SUCCESS {
+                        Some(temp as f32)
+                    } else {
+                        None
+                    },
+                    available: true,
+                    source: Some("nvml".to_string()),
+                })
+            }
+        }
+
+        fn try_init() -> Option<NvmlLoaded> {
+            unsafe {
+                let mut lib = LoadLibraryA(b"nvml.dll\0".as_ptr());
+                if lib.is_null() {
+                    lib = LoadLibraryA(
+                        b"C:\\Program Files\\NVIDIA Corporation\\NVSMI\\nvml.dll\0".as_ptr(),
+                    );
+                }
+                if lib.is_null() {
+                    return None;
+                }
+
+                let load_symbols = || -> Option<NvmlLoaded> {
+                    let fn_init: NvmlInitFn =
+                        get_proc(lib, b"nvmlInit_v2\0").or_else(|| get_proc(lib, b"nvmlInit\0"))?;
+                    let fn_shutdown: NvmlShutdownFn = get_proc(lib, b"nvmlShutdown\0")?;
+                    let fn_get_count: NvmlDeviceGetCountFn =
+                        get_proc(lib, b"nvmlDeviceGetCount_v2\0")
+                            .or_else(|| get_proc(lib, b"nvmlDeviceGetCount\0"))?;
+                    let fn_get_handle: NvmlDeviceGetHandleByIndexFn =
+                        get_proc(lib, b"nvmlDeviceGetHandleByIndex_v2\0")
+                            .or_else(|| get_proc(lib, b"nvmlDeviceGetHandleByIndex\0"))?;
+                    let fn_get_name: NvmlDeviceGetNameFn = get_proc(lib, b"nvmlDeviceGetName\0")?;
+                    let fn_get_util: NvmlDeviceGetUtilizationRatesFn =
+                        get_proc(lib, b"nvmlDeviceGetUtilizationRates\0")?;
+                    let fn_get_mem: NvmlDeviceGetMemoryInfoFn =
+                        get_proc(lib, b"nvmlDeviceGetMemoryInfo\0")?;
+                    let fn_get_temp: NvmlDeviceGetTemperatureFn =
+                        get_proc(lib, b"nvmlDeviceGetTemperature\0")?;
+
+                    if fn_init() != NVML_SUCCESS {
+                        return None;
+                    }
+
+                    let mut count: u32 = 0;
+                    if fn_get_count(&mut count) != NVML_SUCCESS || count == 0 {
+                        fn_shutdown();
+                        return None;
+                    }
+
+                    let mut device: NvmlDevice = std::ptr::null_mut();
+                    if fn_get_handle(0, &mut device) != NVML_SUCCESS || device.is_null() {
+                        fn_shutdown();
+                        return None;
+                    }
+
+                    let mut name_buf = [0i8; 96];
+                    let name = if fn_get_name(device, name_buf.as_mut_ptr(), 95) == NVML_SUCCESS {
+                        name_buf[95] = 0;
+                        let cstr = CStr::from_ptr(name_buf.as_ptr());
+                        cstr.to_string_lossy().into_owned()
+                    } else {
+                        "NVIDIA GPU".to_string()
+                    };
+
+                    Some(NvmlLoaded {
+                        module: lib,
+                        device,
+                        name,
+                        fn_shutdown,
+                        fn_get_util,
+                        fn_get_mem,
+                        fn_get_temp,
+                    })
+                };
+
+                let res = load_symbols();
+                if res.is_none() {
+                    FreeLibrary(lib);
+                }
+                res
+            }
+        }
+    }
 }
 
 #[cfg(target_os = "windows")]
-fn parse_nvidia_smi_line(line: &str) -> Option<GpuInfo> {
+#[allow(dead_code)]
+pub(crate) fn parse_nvidia_smi_line(line: &str) -> Option<GpuInfo> {
     let parts = line.split(',').map(|part| part.trim()).collect::<Vec<_>>();
     if parts.len() < 5 {
         return None;
@@ -111,20 +316,14 @@ fn parse_nvidia_smi_line(line: &str) -> Option<GpuInfo> {
 }
 
 #[cfg(target_os = "windows")]
+#[allow(dead_code)]
 fn mib_to_bytes(value: u64) -> u64 {
     value.saturating_mul(1024 * 1024)
 }
 
-#[cfg(target_os = "windows")]
-fn set_hidden_window(command: &mut Command) {
-    use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    command.creation_flags(CREATE_NO_WINDOW);
-}
-
 #[cfg(target_os = "macos")]
 fn sample_macos_gpu_name() -> Option<String> {
-    let output = Command::new("system_profiler")
+    let output = std::process::Command::new("system_profiler")
         .args(["SPDisplaysDataType"])
         .output()
         .ok()?;
@@ -155,5 +354,15 @@ mod tests {
         assert_eq!(info.usage_percent, Some(12.0));
         assert_eq!(info.memory_used_bytes, Some(1024 * 1024 * 1024));
         assert_eq!(info.temperature_celsius, Some(45.0));
+    }
+
+    #[test]
+    fn gpu_sampler_handles_graceful_degradation() {
+        let mut sampler = super::GpuSampler::new();
+        let info = sampler.sample();
+        if !info.available {
+            assert!(info.name.is_none());
+            assert!(info.usage_percent.is_none());
+        }
     }
 }

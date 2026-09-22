@@ -74,7 +74,7 @@ GPU 采用能力检测。当前平台或硬件无法获取 GPU 数据时，应�
 - Rust 后端
 - 极简无框架前端：HTML、CSS、JavaScript
 - `sysinfo` 采集 CPU、内存、网络计数器
-- Windows 上通过 `nvidia-smi` 尝试采集 NVIDIA GPU 指标
+- Windows 上通过进程内动态 NVML（`nvml.dll`）采集 NVIDIA GPU 指标
 - Tauri autostart 插件
 - Tauri single-instance 插件
 

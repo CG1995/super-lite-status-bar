@@ -211,6 +211,17 @@ pub fn request_quit(app: &AppHandle) {
 }
 
 fn main() {
+    #[cfg(target_os = "windows")]
+    unsafe {
+        extern "system" {
+            fn SetErrorMode(u_mode: u32) -> u32;
+        }
+        const SEM_FAILCRITICALERRORS: u32 = 0x0001;
+        const SEM_NOGPFAULTERRORBOX: u32 = 0x0002;
+        const SEM_NOOPENFILEERRORBOX: u32 = 0x8000;
+        SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+    }
+
     let log_dir = logger::init().unwrap_or_else(|err| {
         eprintln!("failed to initialize logger: {err}");
         std::env::temp_dir().join(format!("{APP_SLUG}-logs"))
@@ -256,6 +267,8 @@ fn main() {
                 .map(|config| config.clone())
                 .unwrap_or_default();
             ui::floating_bar::apply_config(&app_handle, &config)?;
+            #[cfg(target_os = "windows")]
+            register_shutdown_handler(state.shutdown.clone());
             spawn_metrics_loop(&app_handle, &state);
             ui::floating_bar::spawn_interaction_watchdog(&app_handle, state.shutdown.clone());
 
@@ -336,4 +349,29 @@ fn open_path(path: &Path) -> Result<(), String> {
 
     command.spawn().map_err(|err| err.to_string())?;
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn register_shutdown_handler(shutdown: Arc<AtomicBool>) {
+    use std::sync::OnceLock;
+    static SHUTDOWN_REF: OnceLock<Arc<AtomicBool>> = OnceLock::new();
+    let _ = SHUTDOWN_REF.set(shutdown);
+
+    unsafe extern "system" fn ctrl_handler(_ctrl_type: u32) -> i32 {
+        if let Some(flag) = SHUTDOWN_REF.get() {
+            flag.store(true, Ordering::SeqCst);
+        }
+        0
+    }
+
+    extern "system" {
+        fn SetConsoleCtrlHandler(
+            handler: Option<unsafe extern "system" fn(u32) -> i32>,
+            add: i32,
+        ) -> i32;
+    }
+
+    unsafe {
+        SetConsoleCtrlHandler(Some(ctrl_handler), 1);
+    }
 }
