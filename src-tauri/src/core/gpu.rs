@@ -63,6 +63,7 @@ impl GpuSampler {
 }
 
 #[cfg(target_os = "windows")]
+#[allow(clippy::manual_c_str_literals)]
 mod nvml {
     use std::ffi::{c_char, c_void, CStr};
     use std::time::{Duration, Instant};
@@ -100,8 +101,8 @@ mod nvml {
     type NvmlDeviceGetTemperatureFn = unsafe extern "C" fn(NvmlDevice, u32, *mut u32) -> NvmlReturn;
 
     extern "system" {
-        fn LoadLibraryA(lp_lib_file_name: *const u8) -> *mut c_void;
-        fn GetProcAddress(h_module: *mut c_void, lp_proc_name: *const u8) -> *mut c_void;
+        fn LoadLibraryA(lp_lib_file_name: *const c_char) -> *mut c_void;
+        fn GetProcAddress(h_module: *mut c_void, lp_proc_name: *const c_char) -> *mut c_void;
         fn FreeLibrary(h_lib_module: *mut c_void) -> i32;
     }
 
@@ -144,7 +145,7 @@ mod nvml {
 
     const RETRY_BACKOFF: Duration = Duration::from_secs(30);
 
-    unsafe fn get_proc<T>(module: *mut c_void, name: &[u8]) -> Option<T> {
+    unsafe fn get_proc<T>(module: *mut c_void, name: &CStr) -> Option<T> {
         let proc = GetProcAddress(module, name.as_ptr());
         if proc.is_null() {
             None
@@ -219,10 +220,10 @@ mod nvml {
 
         fn try_init() -> Option<NvmlLoaded> {
             unsafe {
-                let mut lib = LoadLibraryA(b"nvml.dll\0".as_ptr());
+                let mut lib = LoadLibraryA(c"nvml.dll".as_ptr());
                 if lib.is_null() {
                     lib = LoadLibraryA(
-                        b"C:\\Program Files\\NVIDIA Corporation\\NVSMI\\nvml.dll\0".as_ptr(),
+                        c"C:\\Program Files\\NVIDIA Corporation\\NVSMI\\nvml.dll".as_ptr(),
                     );
                 }
                 if lib.is_null() {
@@ -231,21 +232,21 @@ mod nvml {
 
                 let load_symbols = || -> Option<NvmlLoaded> {
                     let fn_init: NvmlInitFn =
-                        get_proc(lib, b"nvmlInit_v2\0").or_else(|| get_proc(lib, b"nvmlInit\0"))?;
-                    let fn_shutdown: NvmlShutdownFn = get_proc(lib, b"nvmlShutdown\0")?;
+                        get_proc(lib, c"nvmlInit_v2").or_else(|| get_proc(lib, c"nvmlInit"))?;
+                    let fn_shutdown: NvmlShutdownFn = get_proc(lib, c"nvmlShutdown")?;
                     let fn_get_count: NvmlDeviceGetCountFn =
-                        get_proc(lib, b"nvmlDeviceGetCount_v2\0")
-                            .or_else(|| get_proc(lib, b"nvmlDeviceGetCount\0"))?;
+                        get_proc(lib, c"nvmlDeviceGetCount_v2")
+                            .or_else(|| get_proc(lib, c"nvmlDeviceGetCount"))?;
                     let fn_get_handle: NvmlDeviceGetHandleByIndexFn =
-                        get_proc(lib, b"nvmlDeviceGetHandleByIndex_v2\0")
-                            .or_else(|| get_proc(lib, b"nvmlDeviceGetHandleByIndex\0"))?;
-                    let fn_get_name: NvmlDeviceGetNameFn = get_proc(lib, b"nvmlDeviceGetName\0")?;
+                        get_proc(lib, c"nvmlDeviceGetHandleByIndex_v2")
+                            .or_else(|| get_proc(lib, c"nvmlDeviceGetHandleByIndex"))?;
+                    let fn_get_name: NvmlDeviceGetNameFn = get_proc(lib, c"nvmlDeviceGetName")?;
                     let fn_get_util: NvmlDeviceGetUtilizationRatesFn =
-                        get_proc(lib, b"nvmlDeviceGetUtilizationRates\0")?;
+                        get_proc(lib, c"nvmlDeviceGetUtilizationRates")?;
                     let fn_get_mem: NvmlDeviceGetMemoryInfoFn =
-                        get_proc(lib, b"nvmlDeviceGetMemoryInfo\0")?;
+                        get_proc(lib, c"nvmlDeviceGetMemoryInfo")?;
                     let fn_get_temp: NvmlDeviceGetTemperatureFn =
-                        get_proc(lib, b"nvmlDeviceGetTemperature\0")?;
+                        get_proc(lib, c"nvmlDeviceGetTemperature")?;
 
                     if fn_init() != NVML_SUCCESS {
                         return None;
