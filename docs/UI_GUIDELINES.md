@@ -6,7 +6,11 @@ PulseRing is a quiet status utility, not a dashboard. The interface should feel 
 
 - Use the shared tokens in `ui/styles.css` for color, spacing, radius, type size, shadow and motion.
 - Keep controls at the same visual density: 34px minimum height, rounded corners and visible focus states.
-- Prefer warm neutral panels with subtle accent color. Avoid adding unrelated brand colors unless they map to a metric state.
+- Neutral panels with one blue accent for controls. Color otherwise means status only.
+- Status palette: green = normal, amber = elevated, red = critical. The tray icon (`level_rgb` in `src-tauri/src/ui/tray.rs`) and CSS (`--ok-fill`, `--warn-fill`, `--crit-fill`) must stay in sync.
+- Use `*-fill` tokens for rings, meters and dots; use `*-text` tokens for colored text so it stays readable on light surfaces.
+- Transparent windows (floating bar, tooltip) must keep shadows inside the window padding; nothing outside the card may paint.
+- Floating-bar opacity applies to the background only, never to text.
 - Use tabular numbers for live metrics so values do not visually jump every second.
 
 ## Type
@@ -15,7 +19,7 @@ PulseRing is a quiet status utility, not a dashboard. The interface should feel 
 - Section headings describe the task area, not the implementation.
 - Field labels should be short nouns or verb phrases.
 - Field descriptions should explain user impact in one sentence.
-- Status surfaces use compact uppercase labels: `CPU`, `MEM`, `GPU`, `NET`.
+- Status surfaces use compact labels: `CPU`, `内存`, `GPU`, `网络`.
 
 ## Layout
 
@@ -27,7 +31,9 @@ PulseRing is a quiet status utility, not a dashboard. The interface should feel 
 ## Motion
 
 - Use short entrance motion only: settings page in around 260ms, status surfaces around 150-180ms.
-- Do not animate metric changes every second. The utility should feel stable while values update.
+- Do not animate metric changes every second beyond short ring/meter transitions. The utility should feel stable while values update.
+- The only looping animation is the soft glow on the status ring at the critical level.
+- Live surfaces patch the DOM in place (`ui/components/morph.js`) instead of replacing it, so hover and clicks survive updates.
 - Respect `prefers-reduced-motion`.
 
 ## Metric Display

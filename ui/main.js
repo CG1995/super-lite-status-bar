@@ -7,9 +7,24 @@ const route = window.location.hash.replace("#", "") || "settings";
 const app = document.getElementById("app");
 const api = createApi();
 
+const FONT_PX = { small: 12, medium: 13, large: 15 };
+
 async function bootstrap() {
+  document.documentElement.dataset.surface = route;
   const [config, metrics] = await Promise.all([api.getConfig(), api.getMetrics()]);
   applyTheme(config);
+
+  // Listen before rendering so no update between the initial fetch and render is lost.
+  await api.listen("config-updated", (nextConfig) => {
+    applyTheme(nextConfig);
+    window.dispatchEvent(new CustomEvent("app-config", { detail: nextConfig }));
+  });
+  await api.listen("metrics-updated", (snapshot) => {
+    window.dispatchEvent(new CustomEvent("app-metrics", { detail: snapshot }));
+  });
+  if (!api.isTauri) {
+    window.addEventListener("app-config", (event) => applyTheme(event.detail));
+  }
 
   if (route === "floating") {
     renderFloatingBar(app, api, config, metrics);
@@ -18,28 +33,12 @@ async function bootstrap() {
   } else {
     await renderSettings(app, api, config, metrics);
   }
-
-  await api.listen("config-updated", (nextConfig) => {
-    applyTheme(nextConfig);
-    window.dispatchEvent(new CustomEvent("app-config", { detail: nextConfig }));
-  });
-
-  await api.listen("metrics-updated", (snapshot) => {
-    window.dispatchEvent(new CustomEvent("app-metrics", { detail: snapshot }));
-  });
 }
 
 function applyTheme(config) {
   document.documentElement.dataset.theme = config.theme || "system";
-  document.documentElement.style.setProperty("--status-font-size", `${effectiveFontSize(config)}px`);
-}
-
-function effectiveFontSize(config) {
-  const preset = config.font?.preset || "small";
-  if (preset === "large") return 16;
-  if (preset === "custom") return Math.min(28, Math.max(12, Number(config.font?.custom_px || 12)));
-  if (preset === "medium") return 14;
-  return 12;
+  const px = FONT_PX[config.font?.preset] || FONT_PX.small;
+  document.documentElement.style.setProperty("--status-font-size", `${px}px`);
 }
 
 bootstrap().catch((error) => {

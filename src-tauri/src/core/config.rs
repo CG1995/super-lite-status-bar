@@ -8,7 +8,7 @@ use std::{
 };
 use thiserror::Error;
 
-const CONFIG_VERSION: u32 = 1;
+const CONFIG_VERSION: u32 = 2;
 
 #[derive(Debug, Error)]
 pub enum ConfigError {
@@ -117,6 +117,53 @@ pub enum SpeedUnit {
     Mb,
 }
 
+/// How eagerly metrics escalate to the warning / critical colors.
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum AlertSensitivity {
+    Relaxed,
+    #[default]
+    Standard,
+    Sensitive,
+}
+
+/// Warning and critical thresholds (percent) for one metric.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Threshold {
+    pub warn: f32,
+    pub critical: f32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Thresholds {
+    pub cpu: Threshold,
+    pub memory: Threshold,
+    pub gpu: Threshold,
+}
+
+impl AlertSensitivity {
+    pub fn thresholds(self) -> Thresholds {
+        let t = |warn, critical| Threshold { warn, critical };
+        match self {
+            Self::Relaxed => Thresholds {
+                cpu: t(80.0, 95.0),
+                memory: t(88.0, 95.0),
+                gpu: t(85.0, 97.0),
+            },
+            Self::Standard => Thresholds {
+                cpu: t(70.0, 90.0),
+                memory: t(80.0, 92.0),
+                gpu: t(75.0, 92.0),
+            },
+            Self::Sensitive => Thresholds {
+                cpu: t(55.0, 80.0),
+                memory: t(70.0, 85.0),
+                gpu: t(60.0, 85.0),
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(default)]
 pub struct FontConfig {
@@ -137,9 +184,9 @@ impl FontConfig {
     pub fn effective_px(&self) -> u8 {
         match self.preset {
             FontPreset::Small => 12,
-            FontPreset::Medium => 14,
-            FontPreset::Large => 16,
-            FontPreset::Custom => self.custom_px.clamp(12, 28),
+            FontPreset::Medium => 13,
+            FontPreset::Large => 15,
+            FontPreset::Custom => self.custom_px.clamp(11, 20),
         }
     }
 }
@@ -148,10 +195,14 @@ impl FontConfig {
 #[serde(default)]
 pub struct FloatingBarConfig {
     pub enabled: bool,
+    /// Opacity of the bar background only; text always stays fully opaque.
     pub opacity: f32,
     pub always_on_top: bool,
     pub lock_position: bool,
     pub click_through: bool,
+    pub show_memory: bool,
+    pub show_gpu: bool,
+    pub show_network: bool,
     pub x: Option<f64>,
     pub y: Option<f64>,
 }
@@ -160,10 +211,13 @@ impl Default for FloatingBarConfig {
     fn default() -> Self {
         Self {
             enabled: false,
-            opacity: 0.92,
+            opacity: 0.85,
             always_on_top: true,
             lock_position: false,
             click_through: false,
+            show_memory: true,
+            show_gpu: true,
+            show_network: true,
             x: None,
             y: None,
         }
@@ -180,6 +234,7 @@ pub struct AppConfig {
     pub speed_unit: SpeedUnit,
     pub floating_bar: FloatingBarConfig,
     pub theme: ThemeMode,
+    pub alert: AlertSensitivity,
     pub show_na: bool,
 }
 
@@ -193,20 +248,35 @@ impl Default for AppConfig {
             speed_unit: SpeedUnit::Auto,
             floating_bar: FloatingBarConfig::default(),
             theme: ThemeMode::System,
+            alert: AlertSensitivity::Standard,
             show_na: true,
         }
     }
 }
 
+const REFRESH_STEPS_MS: [u64; 4] = [500, 1_000, 2_000, 3_000];
+
 impl AppConfig {
     pub fn sanitized(mut self) -> Self {
         self.version = CONFIG_VERSION;
-        self.refresh_interval_ms = 1_000;
-        self.font.preset = FontPreset::Small;
-        self.font.custom_px = self.font.custom_px.clamp(12, 28);
+        // Snap to the nearest supported refresh step.
+        self.refresh_interval_ms = REFRESH_STEPS_MS
+            .into_iter()
+            .min_by_key(|step| step.abs_diff(self.refresh_interval_ms))
+            .unwrap_or(1_000);
+        self.font.custom_px = self.font.custom_px.clamp(11, 20);
         self.speed_unit = SpeedUnit::Auto;
         self.show_na = true;
-        self.floating_bar.opacity = self.floating_bar.opacity.clamp(0.35, 1.0);
+        self.floating_bar.opacity = if self.floating_bar.opacity.is_finite() {
+            self.floating_bar.opacity.clamp(0.0, 1.0)
+        } else {
+            FloatingBarConfig::default().opacity
+        };
+        for coordinate in [&mut self.floating_bar.x, &mut self.floating_bar.y] {
+            if coordinate.is_some_and(|value| !value.is_finite()) {
+                *coordinate = None;
+            }
+        }
         self
     }
 }
@@ -243,8 +313,8 @@ mod tests {
         store.save(&config).unwrap();
         let loaded = ConfigStore::load_from_path(&path).unwrap();
 
-        assert_eq!(loaded.refresh_interval_ms, 1_000);
-        assert_eq!(loaded.font.preset, FontPreset::Small);
+        assert_eq!(loaded.refresh_interval_ms, 3_000);
+        assert_eq!(loaded.font.preset, FontPreset::Large);
         assert_eq!(loaded.speed_unit, SpeedUnit::Auto);
         assert!(loaded.show_na);
         let _ = fs::remove_file(path);
@@ -267,8 +337,20 @@ mod tests {
 
         let config = config.sanitized();
 
-        assert_eq!(config.refresh_interval_ms, 1_000);
-        assert_eq!(config.font.custom_px, 12);
+        assert_eq!(config.refresh_interval_ms, 500);
+        assert_eq!(config.font.custom_px, 11);
         assert_eq!(config.floating_bar.opacity, 1.0);
+    }
+
+    #[test]
+    fn loads_v1_config_with_new_defaults() {
+        let raw = r#"{"version":1,"autostart":true,"floating_bar":{"enabled":true,"opacity":0.8}}"#;
+        let config = serde_json::from_str::<AppConfig>(raw).unwrap().sanitized();
+
+        assert_eq!(config.version, CONFIG_VERSION);
+        assert!(config.floating_bar.enabled);
+        assert!(config.floating_bar.show_gpu);
+        assert_eq!(config.alert, AlertSensitivity::Standard);
+        assert_eq!(config.floating_bar.opacity, 0.8);
     }
 }

@@ -27,3 +27,5 @@
 
 !src-tauri/icons/*.ico
 !src-tauri/icons/*.png
+
+/.claude/

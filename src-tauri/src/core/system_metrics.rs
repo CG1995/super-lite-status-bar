@@ -1,5 +1,5 @@
 use crate::core::{
-    config::{AppConfig, SpeedUnit},
+    config::{AppConfig, SpeedUnit, Threshold},
     gpu::{GpuInfo, GpuSampler},
     network_speed::{NetworkCounters, NetworkSpeed, NetworkSpeedCalculator},
 };
@@ -7,12 +7,52 @@ use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 use sysinfo::{Networks, System};
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "kebab-case")]
 pub enum PressureLevel {
+    #[default]
     Normal,
     Medium,
     High,
+}
+
+/// Points a value must fall below a threshold before the level steps back down,
+/// so colors do not flicker when a metric hovers around a boundary.
+const HYSTERESIS: f32 = 4.0;
+
+impl PressureLevel {
+    fn classify(value: f32, threshold: Threshold, previous: Self) -> Self {
+        let raw = if value >= threshold.critical {
+            Self::High
+        } else if value >= threshold.warn {
+            Self::Medium
+        } else {
+            Self::Normal
+        };
+        if raw >= previous {
+            return raw;
+        }
+        // De-escalate only once the value clears the threshold by the hysteresis margin.
+        let held = match previous {
+            Self::High if value >= threshold.critical - HYSTERESIS => Self::High,
+            Self::High | Self::Medium if value >= threshold.warn - HYSTERESIS => Self::Medium,
+            _ => Self::Normal,
+        };
+        held.max(raw)
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct MetricLevels {
+    pub cpu: PressureLevel,
+    pub memory: PressureLevel,
+    pub gpu: PressureLevel,
+}
+
+impl MetricLevels {
+    pub fn overall(self) -> PressureLevel {
+        self.cpu.max(self.memory).max(self.gpu)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -28,10 +68,11 @@ pub struct MetricsSnapshot {
     pub memory: MemoryInfo,
     pub network: NetworkSpeed,
     pub gpu: GpuInfo,
+    pub levels: MetricLevels,
     pub pressure: PressureLevel,
+    /// Value (0-100) of the metric that drives the overall level; drawn as the tray ring arc.
+    pub focus_percent: f32,
     pub compact_text: String,
-    pub full_text: String,
-    pub tooltip: String,
 }
 
 pub struct SystemMetricsSampler {
@@ -40,6 +81,7 @@ pub struct SystemMetricsSampler {
     network_calculator: NetworkSpeedCalculator,
     gpu_sampler: GpuSampler,
     last_network_sample: Instant,
+    levels: MetricLevels,
 }
 
 impl Default for SystemMetricsSampler {
@@ -61,6 +103,7 @@ impl SystemMetricsSampler {
             network_calculator: NetworkSpeedCalculator::new(),
             gpu_sampler: GpuSampler::new(),
             last_network_sample: Instant::now(),
+            levels: MetricLevels::default(),
         }
     }
 
@@ -80,21 +123,30 @@ impl SystemMetricsSampler {
         let memory = memory_info(&self.system);
         let cpu_percent = self.system.global_cpu_usage().clamp(0.0, 100.0);
         let gpu = self.gpu_sampler.sample();
-        let pressure = pressure_level(cpu_percent, memory.percent, gpu.usage_percent);
-
+        let thresholds = config.alert.thresholds();
+        let previous = self.levels;
+        let levels = MetricLevels {
+            cpu: PressureLevel::classify(cpu_percent, thresholds.cpu, previous.cpu),
+            memory: PressureLevel::classify(memory.percent, thresholds.memory, previous.memory),
+            gpu: gpu
+                .usage_percent
+                .map(|usage| PressureLevel::classify(usage, thresholds.gpu, previous.gpu))
+                .unwrap_or_default(),
+        };
+        self.levels = levels;
+        let pressure = levels.overall();
+        let focus_percent = focus_percent(cpu_percent, memory.percent, gpu.usage_percent, levels);
         let compact_text = format_compact(cpu_percent, &memory, network, config);
-        let full_text = format_full(cpu_percent, &memory, network, &gpu, config);
-        let tooltip = format_tooltip(cpu_percent, &memory, network, &gpu, config);
 
         MetricsSnapshot {
             cpu_percent,
             memory,
             network,
             gpu,
+            levels,
             pressure,
+            focus_percent,
             compact_text,
-            full_text,
-            tooltip,
         }
     }
 
@@ -129,16 +181,15 @@ fn memory_info(system: &System) -> MemoryInfo {
     }
 }
 
-fn pressure_level(cpu: f32, memory: f32, gpu: Option<f32>) -> PressureLevel {
-    let gpu = gpu.unwrap_or(0.0);
-    let max = cpu.max(memory).max(gpu);
-    if max >= 85.0 {
-        PressureLevel::High
-    } else if max >= 65.0 {
-        PressureLevel::Medium
-    } else {
-        PressureLevel::Normal
+fn focus_percent(cpu: f32, memory: f32, gpu: Option<f32>, levels: MetricLevels) -> f32 {
+    let overall = levels.overall();
+    if overall == PressureLevel::Normal || levels.cpu == overall {
+        return cpu;
     }
+    if levels.memory == overall {
+        return memory;
+    }
+    gpu.unwrap_or(cpu)
 }
 
 fn format_compact(
@@ -154,127 +205,6 @@ fn format_compact(
         format_speed_short(network.download_bps, &config.speed_unit),
         format_speed_short(network.upload_bps, &config.speed_unit)
     )
-}
-
-fn format_full(
-    cpu: f32,
-    memory: &MemoryInfo,
-    network: NetworkSpeed,
-    gpu: &GpuInfo,
-    config: &AppConfig,
-) -> String {
-    let lines = vec![
-        format!("CPU {:.0}%", cpu),
-        format!(
-            "MEM {} / {}",
-            format_bytes(memory.used_bytes),
-            format_bytes(memory.total_bytes)
-        ),
-        format!(
-            "GPU {} {}",
-            format_optional_value(
-                gpu.usage_percent.map(|value| format!("{value:.0}%")),
-                config.show_na
-            ),
-            short_gpu_name(gpu.name.as_deref())
-        ),
-        format_vram(gpu, config.show_na),
-        format!(
-            "NET ↓ {} ↑ {}",
-            format_speed(network.download_bps, &config.speed_unit),
-            format_speed(network.upload_bps, &config.speed_unit)
-        ),
-    ];
-    lines
-        .into_iter()
-        .filter(|line| !line.is_empty())
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
-fn format_tooltip(
-    cpu: f32,
-    memory: &MemoryInfo,
-    network: NetworkSpeed,
-    gpu: &GpuInfo,
-    config: &AppConfig,
-) -> String {
-    let gpu_name = short_gpu_name(gpu.name.as_deref());
-    format!(
-        "CPU: {:.0}%\nMemory: {} / {} ({:.0}%)\nGPU: {} {}\nVRAM: {}\nNET: ↓ {} ↑ {}",
-        cpu,
-        format_bytes(memory.used_bytes),
-        format_bytes(memory.total_bytes),
-        memory.percent,
-        format_optional_value(
-            gpu.usage_percent.map(|value| format!("{value:.0}%")),
-            config.show_na
-        ),
-        gpu_name,
-        format_vram_value(gpu, config.show_na),
-        format_speed(network.download_bps, &config.speed_unit),
-        format_speed(network.upload_bps, &config.speed_unit)
-    )
-}
-
-fn format_optional_value(value: Option<String>, show_na: bool) -> String {
-    match value {
-        Some(value) => value,
-        None if show_na => "N/A".to_string(),
-        None => String::new(),
-    }
-}
-
-fn format_vram(gpu: &GpuInfo, show_na: bool) -> String {
-    match (gpu.memory_used_bytes, gpu.memory_total_bytes) {
-        (Some(used), Some(total)) => {
-            format!("VRAM {} / {}", format_bytes(used), format_bytes(total))
-        }
-        _ if show_na => "VRAM N/A".to_string(),
-        _ => String::new(),
-    }
-}
-
-fn format_vram_value(gpu: &GpuInfo, show_na: bool) -> String {
-    match (gpu.memory_used_bytes, gpu.memory_total_bytes) {
-        (Some(used), Some(total)) => format!("{} / {}", format_bytes(used), format_bytes(total)),
-        _ if show_na => "N/A".to_string(),
-        _ => String::new(),
-    }
-}
-
-pub fn short_gpu_name(name: Option<&str>) -> String {
-    let Some(name) = name else {
-        return "N/A".to_string();
-    };
-    let cleaned = name
-        .replace("NVIDIA", "")
-        .replace("GeForce", "")
-        .replace("Laptop GPU", "")
-        .replace("GPU", "")
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ");
-    let value = if cleaned.is_empty() {
-        name.trim()
-    } else {
-        cleaned.trim()
-    };
-    value
-        .split_whitespace()
-        .find(|part| part.chars().any(|ch| ch.is_ascii_digit()) && part.chars().count() >= 3)
-        .map(ToOwned::to_owned)
-        .unwrap_or_else(|| value.to_string())
-}
-
-pub fn format_bytes(bytes: u64) -> String {
-    let gib = bytes as f64 / 1024.0 / 1024.0 / 1024.0;
-    if gib >= 1.0 {
-        format!("{gib:.1} GB")
-    } else {
-        let mib = bytes as f64 / 1024.0 / 1024.0;
-        format!("{mib:.0} MB")
-    }
 }
 
 pub fn format_speed(bytes_per_second: f64, unit: &SpeedUnit) -> String {
@@ -300,6 +230,45 @@ pub fn format_speed_short(bytes_per_second: f64, unit: &SpeedUnit) -> String {
 mod tests {
     use super::*;
     use crate::core::config::AppConfig;
+
+    #[test]
+    fn levels_escalate_immediately_and_recover_with_hysteresis() {
+        let t = Threshold {
+            warn: 70.0,
+            critical: 90.0,
+        };
+        let level = PressureLevel::classify(91.0, t, PressureLevel::Normal);
+        assert_eq!(level, PressureLevel::High);
+        // Small dip below critical keeps the level.
+        assert_eq!(PressureLevel::classify(88.0, t, level), PressureLevel::High);
+        // Clear drop steps down to warning, then to normal.
+        assert_eq!(
+            PressureLevel::classify(80.0, t, level),
+            PressureLevel::Medium
+        );
+        assert_eq!(
+            PressureLevel::classify(68.0, t, PressureLevel::Medium),
+            PressureLevel::Medium
+        );
+        assert_eq!(
+            PressureLevel::classify(60.0, t, PressureLevel::Medium),
+            PressureLevel::Normal
+        );
+    }
+
+    #[test]
+    fn focus_follows_the_hottest_metric() {
+        let levels = MetricLevels {
+            cpu: PressureLevel::Normal,
+            memory: PressureLevel::High,
+            gpu: PressureLevel::Medium,
+        };
+        assert_eq!(focus_percent(20.0, 93.0, Some(80.0), levels), 93.0);
+        assert_eq!(
+            focus_percent(20.0, 50.0, None, MetricLevels::default()),
+            20.0
+        );
+    }
 
     #[test]
     fn formats_speed_in_auto_units() {

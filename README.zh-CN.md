@@ -20,13 +20,13 @@ English documentation: [README.md](./README.md)
 
 Windows 构建产物发布在 [GitHub Releases 页面](https://github.com/CG1995/super-lite-status-bar/releases/latest)。
 
-- 推荐下载：`PulseRing_1.0.0_x64-setup.exe`
-- 备用安装包：`PulseRing_1.0.0_x64_en-US.msi`
-- 免安装可执行文件：`PulseRing_1.0.0_x64-portable.exe`
+- 推荐下载：`PulseRing_1.2.0_x64-setup.exe`
+- 备用安装包：`PulseRing_1.2.0_x64_en-US.msi`
+- 免安装可执行文件：`PulseRing_1.2.0_x64-portable.exe`
 
 macOS 构建产物也发布在同一个 Releases 页面。
 
-- 推荐下载：`PulseRing_1.0.0_aarch64.dmg`
+- 推荐下载：`PulseRing_1.2.0_aarch64.dmg`
 - 这个 DMG 由 macOS 上的 Tauri 直接生成，不是改后缀的归档文件。
 
 当前 Windows 产物尚未做代码签名，首次运行时 Windows 可能会出现 SmartScreen 提示。
@@ -37,11 +37,12 @@ macOS 构建产物也发布在同一个 Releases 页面。
 ## 预览
 
 <p align="center">
-  <img src="./docs/assets/tray-status-popup.svg" alt="托盘悬停状态弹窗" width="560">
+  <img src="./docs/assets/control-center-overview.jpg" alt="控制中心概览：实时状态色环" width="640">
 </p>
 
 <p align="center">
-  <img src="./docs/assets/floating-window-preview.svg" alt="mini 悬浮窗" width="560">
+  <img src="./docs/assets/tray-tooltip.jpg" alt="托盘悬停卡片" width="300">
+  <img src="./docs/assets/control-center-floating.jpg" alt="悬浮条设置与实时预览" width="420">
 </p>
 
 ## 监控指标
@@ -55,13 +56,21 @@ GPU 采用能力检测。当前平台或硬件无法获取 GPU 数据时，应�
 
 ## 当前交互
 
+### 状态颜色
+
+所有界面共用一套状态色：**绿色**（正常）、**橙色**（偏高）、**红色**（告急）。
+CPU、内存、GPU 各自独立判定等级，整体状态取三者中最严重的一项。
+阈值由“提醒灵敏度”（宽松 / 标准 / 敏感）决定；数值需回落约 4 个百分点后颜色才会恢复，避免在阈值附近来回闪烁。
+
 ### Windows
 
-- 托盘只显示图标，不在 Windows 托盘里塞长文本。
-- 鼠标悬停托盘图标时显示四行状态弹窗：CPU、内存、GPU、网络。
-- 右键菜单包含：设置、开机自启动、悬浮窗、日志、退出。
-- 悬浮窗可在设置里开启或关闭。
-- 悬浮窗只保留悬停出现的 pin 固定按钮；透明度、穿透、置顶等选项统一放在正式设置页。
+- **托盘图标**是一个色环：颜色代表整体状态，弧长代表当前最需要关注的那项负载。
+- **悬停**托盘图标显示状态卡片：整体状态、CPU / 内存 / GPU 进度条、网络速度。
+- **左键**打开控制中心；**右键**打开菜单（悬浮条、锁定、鼠标穿透、开机自启、日志、退出）。
+- **悬浮条**：胶囊形状，宽度随内容自动调整；透明度只作用于背景，0% 时文字依然清晰。
+  拖动移动、双击打开控制中心、右键打开菜单，点击右侧的拖动/锁形按钮即可锁定。
+  开启鼠标穿透（需先锁定）后，只有锁形按钮保持可点击。
+- **控制中心**：带历史曲线的实时概览、带壁纸实时预览的悬浮条设置、提醒灵敏度与阈值表、刷新频率、主题（跟随系统 / 浅色 / 深色）与开机自启。
 
 ### macOS
 
@@ -83,7 +92,8 @@ GPU 采用能力检测。当前平台或硬件无法获取 GPU 数据时，应�
 Windows 依赖：
 
 - Rust stable 工具链
-- Microsoft Visual Studio 2022 Build Tools，包含 MSVC C++ 工具
+- Microsoft Visual Studio 2022 Build Tools，需勾选“使用 C++ 的桌面开发”工作负载（含 MSVC 与 Windows SDK）
+- 请在 PowerShell 中构建：Git Bash 自带的 `link` 命令会遮蔽 MSVC 链接器
 - WebView2 Runtime
 
 运行：
@@ -110,9 +120,9 @@ cargo tauri build --bundles nsis msi --no-sign --ci
 Windows 打包产物：
 
 ```text
-src-tauri/target/release/bundle/nsis/PulseRing_1.0.0_x64-setup.exe
-src-tauri/target/release/bundle/msi/PulseRing_1.0.0_x64_en-US.msi
-src-tauri/target/release/PulseRing_1.0.0_x64-portable.exe
+src-tauri/target/release/bundle/nsis/PulseRing_1.2.0_x64-setup.exe
+src-tauri/target/release/bundle/msi/PulseRing_1.2.0_x64_en-US.msi
+src-tauri/target/release/PulseRing_1.2.0_x64-portable.exe
 ```
 
 macOS 打包：
@@ -123,7 +133,7 @@ cargo tauri build --bundles dmg --no-sign --ci
 ```
 
 ```text
-src-tauri/target/release/bundle/dmg/PulseRing_1.0.0_aarch64.dmg
+src-tauri/target/release/bundle/dmg/PulseRing_1.2.0_aarch64.dmg
 ```
 
 ## 发布

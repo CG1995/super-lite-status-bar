@@ -1,5 +1,59 @@
 # Changelog / 变更记录
 
+## [1.2.0] - 2026-10-01
+
+### English
+
+#### Changed
+- Redesigned every surface around one status palette (green / amber / red) shared by the tray icon, tooltip, floating bar and control center.
+- The tray icon is now an anti-aliased ring gauge whose color follows the overall status and whose arc shows the load driving it. Previously it was always blue.
+- Settings became a control center: sidebar navigation, live overview with ring gauges and history sparklines, floating-bar page with a live preview over a wallpaper, alert page with a threshold table, and a general page.
+- Floating bar: auto-sizes to its content, colors each metric by its own level, shows a status ring, and offers grip/lock control, double-click to open the control center and a right-click menu.
+- Tray: left-click opens the control center; the menu adds floating-bar lock and click-through toggles.
+- Opening the app manually now shows the control center; autostart (`--silent`) still starts quietly in the tray.
+
+#### Added
+- Per-metric status levels (CPU, memory, GPU) with hysteresis so colors do not flicker around a threshold.
+- Alert sensitivity setting (relaxed / standard / sensitive), refresh rate (0.5 / 1 / 2 / 3 s), floating-bar font size and visible metrics.
+- Native window chrome follows the selected theme.
+
+#### Fixed
+- Floating-bar opacity no longer fades the text: it only affects the background, down to fully transparent, with a halo that keeps text legible.
+- Floating-bar shadow was clipped by the transparent window edge; the tooltip window showed a native border/shadow artifact.
+- Tooltip was mispositioned on high-DPI displays (logical size used as physical pixels) and ignored the monitor work area and multi-monitor setups.
+- Click-through hot zone was not DPI-scaled and drifted from the button; cursor-mode state could desync after a settings change.
+- A floating-bar position saved on a disconnected monitor left the bar off-screen; it now falls back to the bottom-right corner.
+- Position was persisted 250 ms after a drag started (often mid-drag); it now saves after the move settles.
+- Live updates replaced the DOM every second, which could swallow clicks; surfaces now patch in place.
+- The autostart entry kept pointing at an old executable after upgrades; it is re-registered on launch.
+- The tooltip window no longer takes focus when shown.
+
+### 中文
+
+#### 变更
+- 全部界面统一为一套状态色（绿 / 橙 / 红），托盘图标、悬停卡片、悬浮条、控制中心保持一致。
+- 托盘图标改为抗锯齿色环：颜色随整体状态变化，弧长表示当前最需要关注的负载（此前永远是蓝色）。
+- 设置页升级为控制中心：侧边栏导航、带色环与历史曲线的实时概览、带壁纸实时预览的悬浮条页、带阈值表的提醒页、通用页。
+- 悬浮条：宽度随内容自适应，每项指标按自身等级着色，带整体状态色环；支持拖动/锁定按钮、双击打开控制中心、右键菜单。
+- 托盘：左键打开控制中心；右键菜单新增“锁定悬浮条位置”“鼠标穿透”。
+- 手动打开应用会显示控制中心；开机自启（`--silent`）仍然静默驻留托盘。
+
+#### 新增
+- CPU / 内存 / GPU 独立状态等级，带回滞，阈值附近不再闪烁。
+- 提醒灵敏度（宽松 / 标准 / 敏感）、刷新频率（0.5 / 1 / 2 / 3 秒）、悬浮条字号与显示项目。
+- 原生窗口标题栏跟随所选主题。
+
+#### 修复
+- 悬浮条透明度不再让文字一起变淡：只作用于背景，可调到完全透明，并用描边光晕保证文字可读。
+- 悬浮条阴影被透明窗口边缘裁切；托盘提示窗口出现原生边框/阴影残影。
+- 高 DPI 下托盘提示位置错误（把逻辑尺寸当作物理像素），且未考虑任务栏工作区与多显示器。
+- 鼠标穿透的可点击热区未按 DPI 缩放，与按钮错位；修改设置后穿透状态可能失步。
+- 悬浮条位置保存在已断开的显示器上时会跑到屏幕外，现在会回到右下角。
+- 拖动开始 250 毫秒后就保存位置（常在拖动途中）；现在在移动停止后保存。
+- 实时刷新每秒整体替换 DOM，可能吞掉点击；现在原地增量更新。
+- 升级后开机自启仍指向旧的可执行文件；现在每次启动会重新登记。
+- 托盘提示窗口显示时不再抢占焦点。
+
 ## [1.0.3] - 2026-09-22
 
 ### English

@@ -110,6 +110,26 @@ fn get_platform() -> &'static str {
 }
 
 #[tauri::command]
+fn get_app_version(app: AppHandle) -> String {
+    app.package_info().version.to_string()
+}
+
+#[tauri::command]
+fn fit_floating_window(
+    app: AppHandle,
+    width: f64,
+    height: f64,
+    hot_zone: Option<ui::floating_bar::HotZone>,
+) -> Result<(), String> {
+    ui::floating_bar::fit(&app, width, height, hot_zone).map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+fn show_floating_menu(app: AppHandle) -> Result<(), String> {
+    ui::floating_bar::show_context_menu(&app).map_err(|err| err.to_string())
+}
+
+#[tauri::command]
 fn reset_floating_position(
     app: AppHandle,
     state: State<'_, AppState>,
@@ -186,6 +206,7 @@ fn persist_config(
     *state.config.write().map_err(|err| err.to_string())? = config.clone();
     ui::floating_bar::apply_config(app, &config).map_err(|err| err.to_string())?;
     ui::tray::sync_menu_state(app, &config).map_err(|err| err.to_string())?;
+    ui::windows::apply_theme(app, &config);
     app.emit("config-updated", &config)
         .map_err(|err| err.to_string())?;
     Ok(config)
@@ -251,6 +272,9 @@ fn main() {
             show_settings,
             hide_current_window,
             get_platform,
+            get_app_version,
+            fit_floating_window,
+            show_floating_menu,
             reset_floating_position,
             persist_floating_position,
             show_log_folder,
@@ -267,6 +291,18 @@ fn main() {
                 .map(|config| config.clone())
                 .unwrap_or_default();
             ui::floating_bar::apply_config(&app_handle, &config)?;
+            ui::windows::apply_theme(&app_handle, &config);
+            if config.autostart {
+                // Re-register so the entry follows the current executable after an
+                // upgrade or reinstall to a different folder.
+                if let Err(err) = autostart::set_enabled(&app_handle, true) {
+                    tracing::warn!(error = %err, "failed to refresh autostart entry");
+                }
+            }
+            let launched_silently = std::env::args().any(|arg| arg == "--silent");
+            if !launched_silently {
+                let _ = ui::windows::show_settings(&app_handle);
+            }
             #[cfg(target_os = "windows")]
             register_shutdown_handler(state.shutdown.clone());
             spawn_metrics_loop(&app_handle, &state);
